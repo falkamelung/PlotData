@@ -8,8 +8,6 @@ from datetime import datetime, timezone
 from sklearn import datasets, linear_model
 from dateutil.relativedelta import relativedelta
 
-
-
 def get_GPS(GPS_dir, GPS_list_file, plot_box, start_date, end_date, unit, key_length):
 
     inf=open(GPS_list_file)
@@ -71,7 +69,7 @@ def get_quiver(GPS_dir, gpslist,lonlist,latlist,start_date,end_date):
     X,Y,U,V,Z=[],[],[],[],[]      
     for i in range(len(gpslist)):
         try:
-            u,v,z=get_GPS_vel(gpslist[i],date1,date2);u=u-u_ref;v=v-v_ref;
+            u,v,z=get_GPS_vel(GPS_dir, gpslist[i],date1,date2);u=u-u_ref;v=v-v_ref;
             U.append(float(u));V.append(float(v));Z.append(float(z));
             X.append(float(lonlist[i])),Y.append(float(latlist[i]));
         except:
