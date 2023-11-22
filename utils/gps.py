@@ -1,16 +1,17 @@
 import csv
 import datetime 
-import pandas as ps
+import pandas as pd
 from pandas import read_csv
+from pandas import DataFrame
+from pandas import concat
 from datetime import datetime, timezone
+from sklearn import datasets, linear_model
+from dateutil.relativedelta import relativedelta
 
-from plot_data.ipynb import data_dir
 
-def get_GPS(GPS_list_file, plot_box, start_date, end_date, unit, key_length):
 
-    print('in get_GPS')
-    print('QQQ',data_dir)
-    time.sleep(50)
+def get_GPS(GPS_dir, GPS_list_file, plot_box, start_date, end_date, unit, key_length):
+
     inf=open(GPS_list_file)
     next(inf)
     reader=csv.reader(inf, delimiter=' ')
@@ -31,7 +32,7 @@ def get_GPS(GPS_list_file, plot_box, start_date, end_date, unit, key_length):
             new_latlist.append(lat)
             new_lonlist.append(lon)
 
-    lat,lon,U,V,Z = get_quiver(new_gpslist, new_lonlist, new_latlist, start_date, end_date);
+    lat,lon,U,V,Z = get_quiver(GPS_dir, new_gpslist, new_lonlist, new_latlist, start_date, end_date);
     duration_years, quiver_label = generate_quiver_label(unit, key_length, start_date, end_date)
     
     if unit == 'cm':
@@ -41,8 +42,8 @@ def get_GPS(GPS_list_file, plot_box, start_date, end_date, unit, key_length):
 
     return new_gpslist, lat, lon, U, V, Z, quiver_label
 
-def get_GPS_vel(sitename,time1,time2):
-    filename='data/'+sitename+'.txt'
+def get_GPS_vel(GPS_dir, sitename,time1,time2):
+    filename =  GPS_dir + '/' + sitename + '.txt'
     dfin = read_csv(filename, header=0, delimiter=r"\s+")
     index = ['Time', 'East', 'North', 'Up']
     dataval=DataFrame(index=index);
@@ -63,12 +64,10 @@ def get_GPS_vel(sitename,time1,time2):
     regr.fit(dataval['dateval'].values.reshape(-1,1),dataval['up'].values.reshape(-1,1));up_vel=regr.coef_[0][0];
     return east_vel*1000, north_vel*1000,up_vel*1000;
 
-def get_quiver(gpslist,lonlist,latlist,start_date,end_date):    
+def get_quiver(GPS_dir, gpslist,lonlist,latlist,start_date,end_date):    
     date1 = datetime.strptime(start_date, "%Y%m%d") 
     date2 = datetime.strptime(end_date, "%Y%m%d")
-    print('QQQQQQQ',data_dir)
-    time.sleep(2)
-    u_ref, v_ref, z_ref = get_GPS_vel('MKEA', date1, date2)  #print u_ref,v_ref,z_ref
+    u_ref, v_ref, z_ref = get_GPS_vel(GPS_dir, 'MKEA', date1, date2)  #print u_ref,v_ref,z_ref
     X,Y,U,V,Z=[],[],[],[],[]      
     for i in range(len(gpslist)):
         try:

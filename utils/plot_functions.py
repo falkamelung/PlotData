@@ -3,6 +3,8 @@ from mintpy.utils import readfile, writefile
 from matplotlib.colors import LinearSegmentedColormap, LightSource
 import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime, timezone
+
 
 
 def modify_colormap(cmap_name = "plasma_r", exclude_beginning = 0.15, exclude_end = 0.25, show = False):
@@ -27,7 +29,7 @@ def modify_colormap(cmap_name = "plasma_r", exclude_beginning = 0.15, exclude_en
 
     return cmap_custom
 
-def add_colorbar(cmap, start_date="", end_date=""):
+def add_colorbar(ax, cmap, start_date="", end_date=""):
     # Convert date strings to datetime objects
     start_time_date = datetime.strptime(start_date, "%Y%m%d")
     end_time_date = datetime.strptime(end_date, "%Y%m%d")
@@ -35,7 +37,7 @@ def add_colorbar(cmap, start_date="", end_date=""):
     # Create a separate colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=1))
     sm._A = []  # Hack to avoid normalization
-    cbar = plt.colorbar(sm, ax=ax, shrink=0.5)  # Adjust the shrink value as needed
+    cbar = plt.colorbar(sm, ax = ax, shrink=0.5)  # Adjust the shrink value as needed
     
     # Set custom tick locations and labels on the colorbar
     ticks = np.linspace(0, 1, 5)  # You can adjust the number of ticks as needed

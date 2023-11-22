@@ -1,3 +1,6 @@
+import os
+import glob
+
 def generate_view_ifgram_cmd(work_dir, date12, plot_box):
     ifgram_file = work_dir + '/geo_ifgramStack.h5'
     timeseries_file = work_dir + '/geo_timeseries_tropHgt_demErr.h5'
