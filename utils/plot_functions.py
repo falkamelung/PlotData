@@ -1,10 +1,22 @@
 #! /usr/bin/env python3
+import os
 from mintpy.utils import readfile, writefile
 from matplotlib.colors import LinearSegmentedColormap, LightSource
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime, timezone
+from pathlib import Path
 
+def prepend_scratch_if_needed(path):
+    """ Prepends $SCRATCHDIR if path is project name """
+    path_obj = Path(path)
+
+    if path_obj.is_file():
+        raise Exception('ERROR: need to be directory: ' + path)
+
+    if len(Path(path_obj).parts)-1 == 0:
+        path = os.getenv('SCRATCHDIR') + '/' + path
+    return path
 
 
 def modify_colormap(cmap_name = "plasma_r", exclude_beginning = 0.15, exclude_end = 0.25, show = False):
