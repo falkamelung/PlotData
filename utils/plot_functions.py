@@ -6,18 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime, timezone
 from pathlib import Path
-
-def prepend_scratch_if_needed(path):
-    """ Prepends $SCRATCHDIR if path is project name """
-    path_obj = Path(path)
-
-    if path_obj.is_file():
-        raise Exception('ERROR: need to be directory: ' + path)
-
-    if len(Path(path_obj).parts)-1 == 0:
-        path = os.getenv('SCRATCHDIR') + '/' + path
-    return path
-
+from utils.helper_functions import get_dem_extent
 
 def modify_colormap(cmap_name = "plasma_r", exclude_beginning = 0.15, exclude_end = 0.25, show = False):
     """ modify a colormap by excluding percentages at the beginning and end """
@@ -40,7 +29,7 @@ def modify_colormap(cmap_name = "plasma_r", exclude_beginning = 0.15, exclude_en
         plt.show()
 
     return cmap_custom
-
+    
 def add_colorbar(ax, cmap, start_date="", end_date=""):
     # Convert date strings to datetime objects
     start_time_date = datetime.strptime(start_date, "%Y%m%d")
@@ -77,13 +66,6 @@ def get_step_size(plot_extent):
     else:
         rounded_step_size = 0.5
     return rounded_step_size
-
-def get_dem_extent(atr_dem):
-    # get the extent which is required for plotting
-    # [-156.0, -154.99, 18.99, 20.00]
-    dem_extent = [float(atr_dem['X_FIRST']), float(atr_dem['X_FIRST']) + int(atr_dem['WIDTH'])*float(atr_dem['X_STEP']), 
-        float(atr_dem['Y_FIRST']) + int(atr_dem['FILE_LENGTH'])*float(atr_dem['Y_STEP']), float(atr_dem['Y_FIRST'])] 
-    return(dem_extent)     
 
 def get_basemap(dem_file):
     dem, atr_dem = readfile.read(dem_file)
