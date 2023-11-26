@@ -8,9 +8,9 @@ from datetime import datetime, timezone
 from sklearn import datasets, linear_model
 from dateutil.relativedelta import relativedelta
 
-def get_GPS(GPS_dir, GPS_list_file, plot_box, start_date, end_date, unit, key_length):
+def get_gps(gps_dir, gps_list_file, plot_box, start_date, end_date, unit, key_length):
 
-    inf=open(GPS_list_file)
+    inf=open(gps_list_file)
     next(inf)
     reader=csv.reader(inf, delimiter=' ')
     zipper=zip(*reader)
@@ -30,7 +30,7 @@ def get_GPS(GPS_dir, GPS_list_file, plot_box, start_date, end_date, unit, key_le
             new_latlist.append(lat)
             new_lonlist.append(lon)
 
-    lat,lon,U,V,Z = get_quiver(GPS_dir, new_gpslist, new_lonlist, new_latlist, start_date, end_date);
+    lat,lon,U,V,Z = get_quiver(gps_dir, new_gpslist, new_lonlist, new_latlist, start_date, end_date);
     duration_years, quiver_label = generate_quiver_label(unit, key_length, start_date, end_date)
     
     if unit == 'cm':
@@ -40,8 +40,8 @@ def get_GPS(GPS_dir, GPS_list_file, plot_box, start_date, end_date, unit, key_le
 
     return new_gpslist, lat, lon, U, V, Z, quiver_label
 
-def get_GPS_vel(GPS_dir, sitename,time1,time2):
-    filename =  GPS_dir + '/' + sitename + '.txt'
+def get_gps_vel(gps_dir, sitename,time1,time2):
+    filename =  gps_dir + '/' + sitename + '.txt'
     dfin = read_csv(filename, header=0, delimiter=r"\s+")
     index = ['Time', 'East', 'North', 'Up']
     dataval=DataFrame(index=index);
@@ -62,14 +62,14 @@ def get_GPS_vel(GPS_dir, sitename,time1,time2):
     regr.fit(dataval['dateval'].values.reshape(-1,1),dataval['up'].values.reshape(-1,1));up_vel=regr.coef_[0][0];
     return east_vel*1000, north_vel*1000,up_vel*1000;
 
-def get_quiver(GPS_dir, gpslist,lonlist,latlist,start_date,end_date):    
+def get_quiver(gps_dir, gpslist,lonlist,latlist,start_date,end_date):    
     date1 = datetime.strptime(start_date, "%Y%m%d") 
     date2 = datetime.strptime(end_date, "%Y%m%d")
-    u_ref, v_ref, z_ref = get_GPS_vel(GPS_dir, 'MKEA', date1, date2)  #print u_ref,v_ref,z_ref
+    u_ref, v_ref, z_ref = get_gps_vel(gps_dir, 'MKEA', date1, date2)  #print u_ref,v_ref,z_ref
     X,Y,U,V,Z=[],[],[],[],[]      
     for i in range(len(gpslist)):
         try:
-            u,v,z=get_GPS_vel(GPS_dir, gpslist[i],date1,date2);u=u-u_ref;v=v-v_ref;
+            u,v,z=get_gps_vel(gps_dir, gpslist[i],date1,date2);u=u-u_ref;v=v-v_ref;
             U.append(float(u));V.append(float(v));Z.append(float(z));
             X.append(float(lonlist[i])),Y.append(float(latlist[i]));
         except:

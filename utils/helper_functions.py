@@ -20,31 +20,30 @@ def create_parser(subparsers=None):
 
     parser.add_argument('data_dir', nargs='*', help='Directory(s) with InSAR data.\n')
 
-    parser.add_argument('--plotBox', '--subset-lalo', dest='plot_box', default='19.29:19.6,-155.79:-155.41',
+    parser.add_argument('--plot-box', '--subset-lalo', dest='plot_box', type=str, default='19.29:19.6,-155.79:-155.41',
                         help='geographic area plotted')
-    parser.add_argument('--startDate', dest='start_date', default='20220801',help='start date')
-    parser.add_argument('--endDate', dest='end_date', default='20221115',help='end date')
+    parser.add_argument('--start-date', dest='start_date', default='20220801',help='start date')
+    parser.add_argument('--end-date', dest='end_date', default='20221115',help='end date')
     parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=True,
                         help='flag to add seismicity')
     parser.add_argument('--noseismicity', dest='flag_noseismicity', action='store_true',default=False,
                         help='flag to remove seismicity')
-    parser.add_argument('--gps', dest='flag_gps', action='store_true', default=True,
-                        help='flag to add gps vectors')
-    parser.add_argument('--nogps', dest='flag_nogps', action='store_true',default=False,
-                        help='flag to remove gps vectors')
-    parser.add_argument('--plotType', dest='plot_type', default='velocity',
-                        help='Type of plot: velocity, ifgram, shaded_relief (Default: velocity).')
+    parser.add_argument('--GPS', dest='flag_gps', action='store_true', default=True,
+                        help='flag to add GPS vectors')
+    parser.add_argument('--noGPS', dest='flag_nogps', action='store_true',default=False,
+                        help='flag to remove GPS vectors')
+    parser.add_argument('--plot-type', dest='plot_type', default='velocity',
+                        help='Type of plot: velocity, horzvert, ifgram, shaded_relief (Default: velocity).')
     parser.add_argument('--lines', dest='line_file', default=line_file, help='fault file')
-    parser.add_argument('--gpsScaleFac', dest='gps_scale_fac', default=500, help='GPS scale factor')
-    parser.add_argument('--gpsKeyLength', dest='gps_key_length', default=4, help='GPS key length')
-    parser.add_argument('--gpsUnits', dest='gps_unit', default="cm", help='GPS units')
- 
+    parser.add_argument('--GPS-scale-fac', dest='gps_scale_fac', default=500, help='GPS scale factor')
+    parser.add_argument('--GPS-key-length', dest='gps_key_length', default=4, help='GPS key length')
+    parser.add_argument('--GPS-units', dest='gps_unit', default="cm", help='GPS units')
+    parser.add_argument('--ref-point', dest='reference_lalo', type=str, default=False, help='reference point')
+
     args = parser.parse_args()
     
     if len(args.data_dir) < 1 or len(args.data_dir) > 2:
         parser.error('ERROR: You must provide 1 or 2 directory paths.')
-    if len(args.data_dir) == 2:
-        args.plot_type='horzvert'
     if args.flag_noseismicity:
        args.flag_seismicity = False
     del args.flag_noseismicity
@@ -54,7 +53,8 @@ def create_parser(subparsers=None):
     
     inps = args
     inps.plot_box = [float(val) for val in inps.plot_box.replace(':', ',').split(',')]  # converts to plot_box=[19.3, 19.6, -155.8, -155.4]
-
+    inps.reference_lalo = [float(val) for val in inps.reference_lalo.split(',')]        # converts to reference_point=[19.3, -155.8]
+    
     #inps.argv = iargs if iargs else sys.argv[1:]
 
     return inps
@@ -116,16 +116,32 @@ def find_nearest_start_end_date(fname, start_date, end_date):
 
     return mod_start_date, mod_end_date
     
-def get_flight_direction(dir):
-    direction = dir.split('Sen')[1][0]
-    if direction == 'A':
-        direction = 'Asc'
-    elif direction == 'D':
-        direction = 'Desc'
+def get_data_type(file):
+    dir = os.path.dirname(file)
+    while 'Sen' not in os.path.basename(dir) and 'Csk' not in os.path.basename(dir):
+        dir = os.path.dirname(dir)
+        if dir == os.path.dirname(dir):  # Check if we have reached the root directory
+            break
+    if 'Sen' in os.path.basename(dir) or 'Csk' in os.path.basename(dir):
+        #print("Directory containing 'Sen' or 'Csk':", dir)
+        tmp = dir.split('Sen')[1][0] if 'Sen' in os.path.basename(dir) else dir.split('Csk')[1][0]
+        direction = tmp[0]
+        if direction == 'A':
+            type = 'Asc'
+        elif direction == 'D':
+            type = 'Desc'
+        else:
+            raise Exception('ERROR: direction is not A or D -- exiting ')  
     else:
-        raise Exception('ERROR: direction is not A or B -- exiting: ')  
-    return direction
-
+        #print("File does not contain 'Sen' or 'Csk':", file)
+        if file == 'up.h5':
+            type = 'Up'
+        elif file == 'hz.h5':
+            type = 'Horz'
+        else:
+            raise Exception('ERROR: file not up.h5 or horz.h5 -- exiting: ' + file)  
+           
+    return type
 
 def get_dem_extent(atr_dem):
     # get the extent which is required for plotting

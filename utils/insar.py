@@ -10,14 +10,14 @@ def generate_view_ifgram_cmd(work_dir, date12, plot_box):
     cmd = 'view.py {} unwrapPhase-{} -m {} -d {} '.format(ifgram_file, date12, mask_file, geom_file)
     cmd += f"--sub-lat {plot_box[0]} {plot_box[1]} --sub-lon {plot_box[2]} {plot_box[3]} "
     cmd += '--notitle -u cm -c jet_r --nocbar --noverbose '
-    print(cmd)
+    #print(cmd)
     return cmd
 
 def generate_view_velocity_cmd(vel_file,  plot_box):
     cmd = 'view.py {} velocity '.format(vel_file)
     cmd += f" --sub-lat {plot_box[0]} {plot_box[1]} --sub-lon {plot_box[2]} {plot_box[3]} "
     cmd += '--notitle -u cm -c jet_r --nocbar --noverbose' 
-    print(cmd)
+    #print(cmd)
     return cmd
 
 def generate_view_velocity2_cmd(vel_file, mask_file, plot_box):
