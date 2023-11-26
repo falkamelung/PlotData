@@ -108,7 +108,7 @@ def plot_shaded_relief(ax, dem_file, plot_box = []):
     ax.yaxis.set_label_coords(-0.1, 0.5)
 
     # ax.set_extent(plot_extent)
-    ax.set_xlim(plot_box[2], plot_box[3])
-    ax.set_ylim(plot_box[0], plot_box[1])
+    # ax.set_xlim(plot_box[2], plot_box[3])
+    # ax.set_ylim(plot_box[0], plot_box[1])
     return ax
 
