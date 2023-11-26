@@ -116,6 +116,17 @@ def find_nearest_start_end_date(fname, start_date, end_date):
 
     return mod_start_date, mod_end_date
     
+def get_flight_direction(dir):
+    direction = dir.split('Sen')[1][0]
+    if direction == 'A':
+        direction = 'Asc'
+    elif direction == 'D':
+        direction = 'Desc'
+    else:
+        raise Exception('ERROR: direction is not A or B -- exiting: ')  
+    return direction
+
+
 def get_dem_extent(atr_dem):
     # get the extent which is required for plotting
     # [-156.0, -154.99, 18.99, 20.00]
