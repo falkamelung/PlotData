@@ -10,13 +10,18 @@ EXAMPLE = """example:
   plot_data.py  MaunaLoaSenDT87 MaunaLoaSenAT124 
   plot_data.py  MaunaLoaSenDT87       
 """
-
+# def test_print():
+#     print ('QQ0',os.path.abspath("__file__"))
+#     print ('QQ1',os.getenv('RSMASINSAR_HOME') + '/tools/plot_data')
+#     print ('QQ2',sys.path)      
 def create_parser(subparsers=None):
     synopsis = 'Plotting of InSAR, GPS and Seismicity data'
     epilog = EXAMPLE
     parser = argparse.ArgumentParser(description='Plot InSAR, GPS and seismicity data\n')
 
-    line_file = os.path.dirname(os.path.abspath("__file__")) + '/data/hawaii_lines_new.mat'
+    # line_file = os.path.dirname(os.path.abspath("__file__")) + '/data/hawaii_lines_new.mat'   # this does not work in notebook
+    # line_file = sys.path[1] + 'data/hawaii_lines_new.mat'
+    line_file = os.getenv('RSMASINSAR_HOME') + '/tools/plotdata' + '/data/hawaii_lines_new.mat'
 
     parser.add_argument('data_dir', nargs='*', help='Directory(s) with InSAR data.\n')
 
@@ -24,14 +29,10 @@ def create_parser(subparsers=None):
                         help='geographic area plotted')
     parser.add_argument('--start-date', dest='start_date', default='20220101',help='start date')
     parser.add_argument('--end-date', dest='end_date', default='20221101',help='end date')
-    parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=True,
+    parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=False,
                         help='flag to add seismicity')
-    parser.add_argument('--noseismicity', dest='flag_noseismicity', action='store_true',default=False,
-                        help='flag to remove seismicity')
-    parser.add_argument('--GPS', dest='flag_gps', action='store_true', default=True,
+    parser.add_argument('--GPS', dest='flag_gps', action='store_true', default=False,
                         help='flag to add GPS vectors')
-    parser.add_argument('--noGPS', dest='flag_nogps', action='store_true',default=False,
-                        help='flag to remove GPS vectors')
     parser.add_argument('--plot-type', dest='plot_type', default='velocity',
                         help='Type of plot: velocity, horzvert, ifgram, shaded_relief (Default: velocity).')
     parser.add_argument('--lines', dest='line_file', default=line_file, help='fault file')
@@ -39,18 +40,13 @@ def create_parser(subparsers=None):
     parser.add_argument('--GPS-key-length', dest='gps_key_length', default=4, help='GPS key length')
     parser.add_argument('--GPS-units', dest='gps_unit', default="cm", help='GPS units')
     parser.add_argument('--ref-point', dest='reference_lalo', type=str, default=False, help='reference point')
+    parser.add_argument('--mask-thresh', dest='mask_vmin', type=float, default=0.7, help='coherence threshold for masking (Default: 0.7)')
 
     args = parser.parse_args()
     
     if len(args.data_dir) < 1 or len(args.data_dir) > 2:
         parser.error('ERROR: You must provide 1 or 2 directory paths.')
-    if args.flag_noseismicity:
-       args.flag_seismicity = False
-    del args.flag_noseismicity
-    if args.flag_nogps:
-       args.flag_gps = False
-    del args.flag_nogps
-    
+
     inps = args
     inps.plot_box = [float(val) for val in inps.plot_box.replace(':', ',').split(',')]  # converts to plot_box=[19.3, 19.6, -155.8, -155.4]
     if inps.reference_lalo:
