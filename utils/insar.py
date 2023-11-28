@@ -16,14 +16,14 @@ def generate_view_ifgram_cmd(work_dir, date12, plot_box):
 def generate_view_velocity_cmd(vel_file,  plot_box):
     cmd = 'view.py {} velocity '.format(vel_file)
     cmd += f" --sub-lat {plot_box[0]} {plot_box[1]} --sub-lon {plot_box[2]} {plot_box[3]} "
-    cmd += '--notitle -u cm -c jet_r --nocbar --noverbose' 
+    cmd += '--notitle -u cm -c jet --nocbar --noverbose' 
     #print(cmd)
     return cmd
 
 def generate_view_velocity2_cmd(vel_file, mask_file, plot_box):
     cmd = 'view.py {} velocity -m {}'.format(vel_file, mask_file)
     cmd += f" --sub-lat {plot_box[0]} {plot_box[1]} --sub-lon {plot_box[2]} {plot_box[3]} "
-    cmd += '--notitle -u cm -c jet_r --nocbar --noverbose' 
+    cmd += '--notitle -u cm -c jet --nocbar --noverbose' 
     return cmd
     
 def get_eos_file(path):
@@ -37,7 +37,10 @@ def get_eos_file(path):
     elif os.path.isfile(os.getenv('SCRATCHDIR') + '/' + path):
         eos_file = os.getenv('SCRATCHDIR') + '/' + path
     else:
-        files = glob.glob( path + '/mintpy/*.he5' )
+        if not 'mintpy' in path:
+            files = glob.glob( path + '/mintpy/*.he5' )
+        else:
+            files = glob.glob( path + '/*.he5' )
         eos_file = max(files, key=os.path.getctime)
 
     keywords = ['SenDT', 'SenAT', 'CskAT', 'CskDT']

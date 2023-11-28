@@ -22,8 +22,8 @@ def create_parser(subparsers=None):
 
     parser.add_argument('--plot-box', '--subset-lalo', dest='plot_box', type=str, default='19.29:19.6,-155.79:-155.41',
                         help='geographic area plotted')
-    parser.add_argument('--start-date', dest='start_date', default='20220801',help='start date')
-    parser.add_argument('--end-date', dest='end_date', default='20221115',help='end date')
+    parser.add_argument('--start-date', dest='start_date', default='20220101',help='start date')
+    parser.add_argument('--end-date', dest='end_date', default='20221101',help='end date')
     parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=True,
                         help='flag to add seismicity')
     parser.add_argument('--noseismicity', dest='flag_noseismicity', action='store_true',default=False,
@@ -53,7 +53,8 @@ def create_parser(subparsers=None):
     
     inps = args
     inps.plot_box = [float(val) for val in inps.plot_box.replace(':', ',').split(',')]  # converts to plot_box=[19.3, 19.6, -155.8, -155.4]
-    inps.reference_lalo = [float(val) for val in inps.reference_lalo.split(',')]        # converts to reference_point=[19.3, -155.8]
+    if inps.reference_lalo:
+        inps.reference_lalo = [float(val) for val in inps.reference_lalo.split(',')]        # converts to reference_point=[19.3, -155.8]
     
     #inps.argv = iargs if iargs else sys.argv[1:]
 
@@ -68,16 +69,33 @@ def is_jupyter():
     return jn
     
 def prepend_scratchdir_if_needed(path):
-    """ Prepends $SCRATCHDIR if path is project name """
+    """ Prepends $SCRATCHDIR if path is project name (got complicated; neet to refactor) """
+
+    path, mintpy_dir = remove_directory_containing_mintpy_from_path(path)
     path_obj = Path(path)
 
     if path_obj.is_file():
         raise Exception('ERROR: need to be directory: ' + path)
-
-    if len(Path(path_obj).parts)-1 == 0:
+    if len(Path(path_obj).parts) == 1:
         path = os.getenv('SCRATCHDIR') + '/' + path
+    if  mintpy_dir:
+        path = path + '/' + mintpy_dir
+   
     return path
 
+def remove_directory_containing_mintpy_from_path(path):
+    mintpy_dir = None
+    dirs = path.split('/')
+    for i in range(len(dirs) - 1, -1, -1):
+        dir = dirs[i]
+        if 'mintpy' in dir:
+            mintpy_dir = dir
+            # Remove the directory and all subsequent directories
+            dirs = dirs[:i]
+            break
+    cleaned_path = '/'.join(dirs)
+    return cleaned_path,  mintpy_dir
+  
 def find_nearest_start_end_date(fname, start_date, end_date):
     ''' Find nearest dates to start and end dates given as YYYYMMDD '''
     
