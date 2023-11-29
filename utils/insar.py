@@ -16,7 +16,7 @@ def generate_view_ifgram_cmd(work_dir, date12, plot_box):
 def generate_view_velocity_cmd(vel_file,  plot_box):
     cmd = 'view.py {} velocity '.format(vel_file)
     cmd += f" --sub-lat {plot_box[0]} {plot_box[1]} --sub-lon {plot_box[2]} {plot_box[3]} "
-    cmd += '--notitle -u cm -c jet --nocbar --noverbose' 
+    cmd += '--notitle -u cm -c jet --noverbose' 
     #print(cmd)
     return cmd
 
