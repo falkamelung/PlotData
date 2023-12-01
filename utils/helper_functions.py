@@ -3,28 +3,25 @@ import os
 import argparse
 from mintpy.utils import readfile, writefile
 from mintpy.objects import HDFEOS
+from mintpy.utils.arg_utils import create_argument_parser
 import numpy as np
 from pathlib import Path
+
 
 EXAMPLE = """example:
   plot_data.py  MaunaLoaSenDT87 MaunaLoaSenAT124 
   plot_data.py  MaunaLoaSenDT87       
 """
-# def test_print():
-#     print ('QQ0',os.path.abspath("__file__"))
-#     print ('QQ1',os.getenv('RSMASINSAR_HOME') + '/tools/plot_data')
-#     print ('QQ2',sys.path)      
+     
 def create_parser(subparsers=None):
     synopsis = 'Plotting of InSAR, GPS and Seismicity data'
     epilog = EXAMPLE
-    parser = argparse.ArgumentParser(description='Plot InSAR, GPS and seismicity data\n')
-
-    # line_file = os.path.dirname(os.path.abspath("__file__")) + '/data/hawaii_lines_new.mat'   # this does not work in notebook
-    # line_file = sys.path[1] + 'data/hawaii_lines_new.mat'
+    name = __name__.split('.')[-1]
+    parser = create_argument_parser(
+    name, synopsis=synopsis, description=synopsis, epilog=epilog, subparsers=subparsers)
     line_file = os.getenv('RSMASINSAR_HOME') + '/tools/plotdata' + '/data/hawaii_lines_new.mat'
 
     parser.add_argument('data_dir', nargs='*', help='Directory(s) with InSAR data.\n')
-
     parser.add_argument('--plot-box', '--subset-lalo', dest='plot_box', type=str, default='19.29:19.6,-155.79:-155.41',
                         help='geographic area plotted')
     parser.add_argument('--start-date', dest='start_date', default='20220101',help='start date')
@@ -41,18 +38,27 @@ def create_parser(subparsers=None):
     parser.add_argument('--GPS-units', dest='gps_unit', default="cm", help='GPS units')
     parser.add_argument('--ref-point', dest='reference_lalo', type=str, default=False, help='reference point')
     parser.add_argument('--mask-thresh', dest='mask_vmin', type=float, default=0.7, help='coherence threshold for masking (Default: 0.7)')
+    parser.add_argument('--vlim', dest='vlim', nargs=2, metavar=('VMIN', 'VMAX'), type=float, help='colorlimit')
 
-    args = parser.parse_args()
+    return parser
+
+def cmd_line_parse(iargs=None):
+    """Command line parser."""
+    parser = create_parser()
+    args = parser.parse_args(args=iargs)
+    inps = args
     
     if len(args.data_dir) < 1 or len(args.data_dir) > 2:
         parser.error('ERROR: You must provide 1 or 2 directory paths.')
-
-    inps = args
-    inps.plot_box = [float(val) for val in inps.plot_box.replace(':', ',').split(',')]  # converts to plot_box=[19.3, 19.6, -155.8, -155.4]
+        
+    print(args.plot_box)
+    #import pdb; pdb.set_trace()
+    inps.plot_box = [float(val) for val in args.plot_box.replace(':', ',').split(',')]  # converts to plot_box=[19.3, 19.6, -155.8, -155.4]
+    print(inps.reference_lalo)
     if inps.reference_lalo:
-        inps.reference_lalo = [float(val) for val in inps.reference_lalo.split(',')]        # converts to reference_point=[19.3, -155.8]
-    
-    #inps.argv = iargs if iargs else sys.argv[1:]
+        reference_lalo = args.reference_lalo
+        print('QQQ',reference_lalo)
+        inps.reference_lalo = [float(val) for val in reference_lalo.split(',')]        # converts to reference_point=[19.3, -155.8]
 
     return inps
 
@@ -113,15 +119,22 @@ def find_nearest_start_end_date(fname, start_date, end_date):
             mod_start_date = date
             # print("Date just before start date:", date)
             break
-            
-    # print ('end_date_int: ',end_date_int)
-    for date in dateList:
+    # print ('start_date_int: ',start_date_int)
+    for date in reversed(dateList):
         date_int = int(date)
         # print(date_int)
-        if date_int >= end_date_int:
+        if date_int <= end_date_int:
             mod_end_date = date
-            # print("Date just after end date:", date)
+            # print("Date just before end date:", date)
             break
+    
+    #This works for the data after end date 
+    # for date in dateList:
+    #     date_int = int(date)
+    #     if date_int >= end_date_int:
+    #         mod_end_date = date
+    #         # print("Date just after end date:", date)
+    #         break
 
     print('###############################################')
     print(' Given start_date, end_date:', start_date, end_date) 

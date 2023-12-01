@@ -1,7 +1,7 @@
 import os
 import glob
 
-def generate_view_ifgram_cmd(work_dir, date12, plot_box):
+def generate_view_ifgram_cmd(work_dir, date12, plot_box, vlim):
     ifgram_file = work_dir + '/mintpy/geo/geo_ifgramStack.h5'
     geom_file = work_dir + '/mintpy/geo/geo_geometryRadar.h5'
     mask_file = work_dir + '/mintpy/geo/geo_maskTempCoh.h5'   # generated with generate_mask.py geo_geometryRadar.h5 height -m 3.5 -o waterMask.h5 option
@@ -13,14 +13,17 @@ def generate_view_ifgram_cmd(work_dir, date12, plot_box):
     #print(cmd)
     return cmd
 
-def generate_view_velocity_cmd(vel_file,  plot_box):
+def generate_view_velocity_cmd(vel_file,  plot_box, vlim):
     cmd = 'view.py {} velocity '.format(vel_file)
     cmd += f" --sub-lat {plot_box[0]} {plot_box[1]} --sub-lon {plot_box[2]} {plot_box[3]} "
     cmd += '--notitle -u cm -c jet --noverbose' 
-    #print(cmd)
+    if vlim:
+        cmd += f" --vlim {vlim[0]} {vlim[1]}"
+        
+    # print(cmd)
     return cmd
 
-def generate_view_velocity2_cmd(vel_file, mask_file, plot_box):
+def generate_view_velocity2_cmd(vel_file, mask_file, plot_box, vlim):
     cmd = 'view.py {} velocity -m {}'.format(vel_file, mask_file)
     cmd += f" --sub-lat {plot_box[0]} {plot_box[1]} --sub-lon {plot_box[2]} {plot_box[3]} "
     cmd += '--notitle -u cm -c jet --nocbar --noverbose' 
