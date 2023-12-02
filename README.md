@@ -8,6 +8,8 @@ export SCRATCHDIR=~/Downloads/test
 export PLOTDATA_HOME=~/tools/plotdata
 
 export PATH=$PLOTDATA_HOME:$PATH
+export PYTHONPATH=$PLOTDATA_HOME:$PYTHONPATH
+
 ```
 - Get the InSAR and GPS data for Hawaii:
 ```
@@ -17,7 +19,7 @@ wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/MaunaLoaSen.tar
 tar xvf MaunaLoaSen.tar
 
 mkdir -p MLtry/data
-tar xvf GPSdata.tar  -C MLtry/data
+tar xvf GPSdata.tar  -C MaunaLoa/MLtry/data
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/GPSdata.tar
 ```
 - Clone code to your tools directory:
