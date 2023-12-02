@@ -28,11 +28,6 @@ mkdir -p $PLOTDATA_HOME
 cd $PLOTDATA_HOME
 git clone https://github.com/geodesymiami/plotdata.git
 ```
-- prepend to your PATH:
-```
-
-```
-
 - run testdata:
 ```
 cd $SCRATCHDIR
