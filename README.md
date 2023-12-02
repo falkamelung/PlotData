@@ -28,7 +28,7 @@ tar xvf GPSdata.tar
 - Clone code to your tools directory:
 ```
 mkdir -p $PLOTDATA_HOME
-cd $PLOTDATA_HOME
+cd $PLOTDATA_HOME/..
 git clone https://github.com/geodesymiami/plotdata.git
 ```
 - run testdata:
