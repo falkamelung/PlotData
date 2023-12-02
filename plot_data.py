@@ -66,12 +66,12 @@ def run_prepare(inps):
     inps.cmap_name = "plasma_r"; inps.exclude_beginning = 0.2; inps.exclude_end = 0.2
     
     # Hardwired for Hawaii
-    if 'TESTDATA_PLOTDATA' in os.environ:
-        inps.gps_dir = os.getenv('TESTDATA_PLOTDATA')
+    if 'GPSDIR' in os.environ:
+        inps.gps_dir = os.getenv('GPSDIR')
     else:
         inps.gps_dir = os.getenv('SCRATCHDIR') + '/MaunaLoa/MLtry/data/'
-    inps.gps_list_file = inps.gps_dir + 'GPS_BenBrooks_03-05full.txt'
-    inps.dem_file = inps.gps_dir + 'demGeo.h5'  
+    inps.gps_list_file = inps.gps_dir + '/GPS_BenBrooks_03-05full.txt'
+    inps.dem_file = inps.gps_dir + '/demGeo.h5'  
 
     # get dem, earthquake and GPS data, normalize event times for plotting)
     dem_shade, dem_extent = get_basemap(inps.dem_file)
