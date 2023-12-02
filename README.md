@@ -1,5 +1,6 @@
 # plotdata
-Scripts to plot GPS, Seismcity abd InSAR data
+Scripts to plot InSAR, GPS and Seismcity data. Need a working python installation including `MintPy`.
+
 
 # Installation
 - Set environment variables:
@@ -38,3 +39,4 @@ plot_data.py --help
 plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --period 20221127-20221219 --plot-type velocity --ref-point 19.55,-155.45
 ```
 Run the Notebook `run_MaunaLoa.ipynb`.  You also can run in Jupyer Lab `plot_data.ipynb`. Adjust `cmd` line below the `main` function as needed.  
+`--save_gbis` saves data in GBIS format.
