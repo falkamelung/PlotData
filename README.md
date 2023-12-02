@@ -21,8 +21,14 @@ wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/GPSdata.tar
 - Clone code to your tools directory:
 ```
 mkdir -p $PLOTDATA_HOME
+cd $PLOTDATA_HOME
 git clone https://github.com/geodesymiami/plotdata.git
 ```
+- prepend to your PATH:
+```
+export PATH=$PLOTDATA_HOME:$PATH
+```
+
 - run testdata:
 ```
 cd $SCRATCHDIR
