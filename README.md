@@ -2,10 +2,12 @@
 Scripts to plot GPS, Seismcity abd InSAR data
 
 # Installation
-- Set a $SCRATCHDIR environment variable:
+- Set environment variables and prepend to $PATH:
 ```
 export SCRATCHDIR=~/Downloads/test
 export PLOTDATA_HOME=~/tools/plotdata
+
+export PATH=$PLOTDATA_HOME:$PATH
 ```
 - Get the InSAR and GPS data for Hawaii:
 ```
@@ -26,7 +28,7 @@ git clone https://github.com/geodesymiami/plotdata.git
 ```
 - prepend to your PATH:
 ```
-export PATH=$PLOTDATA_HOME:$PATH
+
 ```
 
 - run testdata:
