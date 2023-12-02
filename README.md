@@ -2,8 +2,15 @@
 Scripts to plot GPS, Seismcity abd InSAR data
 
 # Installation
-- Set a $SCRATCHDIR environment variable (required in the scripts)
+- Set a $SCRATCHDIR environment variable (required):
+```
 export SCRATCHDIR=~/Downloads/test
-- Get the InSAR data:
+```
+- Get the InSAR, GPS data and clone the repo:
+```
+mkdir $SCRATCHDIR
 cd $SCRATCHDIR
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/MaunaLoaSen.tar
+wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/GPSdata.tar
+git clone https://github.com/geodesymiami/plotdata.git
+```
