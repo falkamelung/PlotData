@@ -20,9 +20,9 @@ cd $SCRATCHDIR
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/MaunaLoaSen.tar
 tar xvf MaunaLoaSen.tar
 
-mkdir -p $GPSdira
-tar xvf GPSdata.tar  -C $GPSdir
+mkdir -p $GPSdir
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/GPSdata.tar
+tar xvf GPSdata.tar  -C $GPSdir
 ```
 - Clone code to your tools directory:
 ```
