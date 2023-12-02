@@ -69,10 +69,11 @@ def run_prepare(inps):
     if 'GPSDIR' in os.environ:
         inps.gps_dir = os.getenv('GPSDIR')
     else:
-        inps.gps_dir = os.getenv('SCRATCHDIR') + '/MaunaLoa/MLtry/data/'
+        inps.gps_dir = os.getenv('SCRATCHDIR') + '/MaunaLoa/MLtry/data'
     inps.gps_list_file = inps.gps_dir + '/GPS_BenBrooks_03-05full.txt'
     inps.dem_file = inps.gps_dir + '/data/demGeo.h5'  
 
+    print('QQQQ',inps.dem_file)
     # get dem, earthquake and GPS data, normalize event times for plotting)
     dem_shade, dem_extent = get_basemap(inps.dem_file)
 
@@ -92,7 +93,7 @@ def run_prepare(inps):
     reference_lalo = inps.reference_lalo
     mask_vmin = inps.mask_vmin
     vlim = inps.vlim
-    flag_gbis =  inps.flag_gbis
+    flag_save_gbis =  inps.flag_save_gbis
     start_date = inps.period[0]
     end_date = inps.period[1]
 
@@ -116,8 +117,7 @@ def run_prepare(inps):
             save_gdal.main( cmd.split() )
             cmd = f'{geo_vel_file} --mask {temp_coh_file} --mask-vmin { mask_vmin} --outfile {geo_vel_file}'
             mask.main( cmd.split() )
-            flag_gbis=True
-            if flag_gbis:
+            if flag_save_gbis:
                 save_gbis_plotdata(eos_file, geo_vel_file, start_date_mod, end_date_mod)
 
             data_dict[geo_vel_file] = {
@@ -163,7 +163,7 @@ def run_plot(data_dict, inps):
     reference_lalo = inps.reference_lalo
     mask_vmin = inps.mask_vmin
     vlim = inps.vlim
-    flag_gbis =  inps.flag_gbis
+    flag_save_gbis =  inps.flag_save_gbis
     start_date = inps.period[0]
     end_date = inps.period[1]
     depth_range = inps.depth_range
@@ -251,4 +251,10 @@ if __name__ == '__main__':
         sys.argv = cmd.split()
     print('Command:',sys.argv)
     data_dict, inps, sys.argv = main(sys.argv[1:]) 
+
+
+# In[ ]:
+
+
+
 

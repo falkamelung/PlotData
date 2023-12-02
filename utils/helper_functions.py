@@ -38,7 +38,7 @@ def create_parser(subparsers=None):
     parser.add_argument('--ref-point', dest='reference_lalo', type=str, default=False, help='reference point')
     parser.add_argument('--mask-thresh', dest='mask_vmin', type=float, default=0.7, help='coherence threshold for masking (Default: 0.7)')
     parser.add_argument('--vlim', dest='vlim', nargs=2, metavar=('VMIN', 'VMAX'), type=float, help='colorlimit')
-    parser.add_argument('--save-gbis', dest='flag_gbis', action='store_true', default=False, help='save GBIS files')
+    parser.add_argument('--save-gbis', dest='flag_save_gbis', action='store_true', default=False, help='save GBIS files')
 
     return parser
 
@@ -52,7 +52,7 @@ def cmd_line_parse(iargs=None):
         
     print('QQ plot_box',args.plot_box)
     print('QQ flag_gps',args.flag_gps)
-    print('QQ flag_gbis',args.flag_gbis)
+    print('QQ flag_save_gbis',args.flag_save_gbis)
     print('QQ data_dir',args.data_dir)
     #import pdb; pdb.set_trace()
     inps = args
