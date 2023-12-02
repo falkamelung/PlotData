@@ -6,7 +6,7 @@ Scripts to plot GPS, Seismcity abd InSAR data
 ```
 export SCRATCHDIR=~/Downloads/test
 export PLOTDATA_HOME=~/tools/plotdata
-export GPSdata=~/Downloads/GPSdata
+export GPSDIR=~/Downloads/GPSdata
 ```
 - Prepend to your $PATH:
 ```
@@ -20,9 +20,10 @@ cd $SCRATCHDIR
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/MaunaLoaSen.tar
 tar xvf MaunaLoaSen.tar
 
-mkdir -p $GPSdir
+mkdir -p $GPSDIR
+cd $GPSDIR
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/GPSdata.tar
-tar xvf GPSdata.tar  -C $GPSdir
+tar xvf GPSdata.tar 
 ```
 - Clone code to your tools directory:
 ```
