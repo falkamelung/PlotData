@@ -5,7 +5,7 @@ Scripts to plot GPS, Seismcity abd InSAR data
 - Set a $SCRATCHDIR environment variable:
 ```
 export SCRATCHDIR=~/Downloads/test
-export PLOTDATA_HOME=~/tools
+export PLOTDATA_HOME=~/tools/plotdata
 ```
 - Get the InSAR and GPS data for Hawaii:
 ```
