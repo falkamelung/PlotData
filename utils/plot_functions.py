@@ -99,16 +99,13 @@ def plot_shaded_relief(ax, dem_file, plot_box = []):
     lons, lats = get_ticks(plot_extent, step_size = step_size)
     print(lons)
     print(lats)
-    # ax.set_xticks(lons, crs=ccrs.PlateCarree())
-    # ax.set_yticks(lats, crs=ccrs.PlateCarree())
+
     ax.set_xticks(lons)
     ax.set_yticks(lats)
 
     ax.xaxis.set_label_coords(0.5, -0.1)
     ax.yaxis.set_label_coords(-0.1, 0.5)
 
-    # ax.set_extent(plot_extent)
-    # ax.set_xlim(plot_box[2], plot_box[3])
-    # ax.set_ylim(plot_box[0], plot_box[1])
+
     return ax
 
