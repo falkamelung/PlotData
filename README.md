@@ -11,6 +11,9 @@ export SCRATCHDIR=~/Downloads/test
 mkdir $SCRATCHDIR
 cd $SCRATCHDIR
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/MaunaLoaSen.tar
+untar MaunaLoaSen.tar
+untar GPSdata.tar
+
 wget http://149.165.154.65/data/HDF5EOS/MaunaLoa/GPSdata.tar
 git clone https://github.com/geodesymiami/plotdata.git
 ```
