@@ -71,7 +71,7 @@ def run_prepare(inps):
     else:
         inps.gps_dir = os.getenv('SCRATCHDIR') + '/MaunaLoa/MLtry/data/'
     inps.gps_list_file = inps.gps_dir + '/GPS_BenBrooks_03-05full.txt'
-    inps.dem_file = inps.gps_dir + '/demGeo.h5'  
+    inps.dem_file = inps.gps_dir + '/data/demGeo.h5'  
 
     # get dem, earthquake and GPS data, normalize event times for plotting)
     dem_shade, dem_extent = get_basemap(inps.dem_file)
