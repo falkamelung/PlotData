@@ -2,7 +2,9 @@
 # coding: utf-8
 
 # ## Plot InSAR, GPS and seismicity data
-#   It assumes data are located in  $SCRATCHDIR in  MintPy convention (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
+# Assumes the data are located in  $SCRATCHDIR in  MintPy convention (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
+# 
+# For an axample run all cells of this notebook. The  plot options can be changed by editing the last `cmd = plot_data.py ...`  in the  cell of the `main` functions. Use --save-gbis to save as GBIS files.
 
 # In[ ]:
 
@@ -103,9 +105,9 @@ def run_prepare(inps):
 
     # calculate velocities for periods of interest
     data_dict = {}
-    for data_dir in data_dir:
-        work_dir = prepend_scratchdir_if_needed(data_dir)
-        if plot_type == 'velocity' or plot_type == 'horzvert':
+    if plot_type == 'velocity' or plot_type == 'horzvert':
+        for data_dir in data_dir:
+            work_dir = prepend_scratchdir_if_needed(data_dir)
             eos_file, out_dir, geo_vel_file = get_eos_file(work_dir)
             temp_coh_file=geo_vel_file.replace('velocity.h5','temporalCoherence.tif')
             start_date_mod, end_date_mod = find_nearest_start_end_date(eos_file, start_date, end_date)
@@ -125,14 +127,18 @@ def run_prepare(inps):
                 reference_point.main( cmd.split() )
                 cmd = f'{geo_vel_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
                 reference_point.main( cmd.split() )
-
             if flag_save_gbis:
                 save_gbis_plotdata(eos_file, geo_vel_file, start_date_mod, end_date_mod)
-
             data_dict[geo_vel_file] = {
-                'start_date': start_date_mod,
-                'end_date': end_date_mod
+            'start_date': start_date_mod,
+            'end_date': end_date_mod
             }
+    elif plot_type == 'shaded-relief':
+        data_dict[dem_file] = {
+        'start_date': start_date,
+        'end_date': end_date
+        }
+ 
     # calculate horizontal and vertical
     if  plot_type == 'horzvert':
         data_dict = {}
@@ -176,7 +182,7 @@ def run_plot(data_dict, inps):
     exclude_beginning = inps.exclude_beginning
     exclude_end = inps.exclude_end
 
-    # plotting
+    # initialize plot
     if len(data_dict) == 2:
         fig, axes = plt.subplots(1, 2, figsize=[12, 5] )
         inps.font_size = int(inps.font_size*0.7)  
@@ -187,14 +193,17 @@ def run_plot(data_dict, inps):
     for i, (file, dict) in enumerate(data_dict.items()):
         axes[i].set_xlim(plot_box[2], plot_box[3])
         axes[i].set_ylim(plot_box[0], plot_box[1])
-        if plot_type == 'velocity' or plot_type == 'horzvert':
-            cmd = generate_view_velocity_cmd(file, inps)
-        elif plot_type == 'ifgram':
-            cmd = generate_view_ifgram_cmd(work_dir, date12, inps)
-        data, atr, tmp_inps = prep_slice(cmd)
-        q0, q1, q2, q3 = plot_slice(axes[i], data, atr, tmp_inps)
-    
-        # plot title
+        
+        if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'ifgram':
+            if plot_type == 'velocity' or plot_type == 'horzvert':
+                cmd = generate_view_velocity_cmd(file, inps) 
+            elif plot_type == 'ifgram':
+                cmd = generate_view_ifgram_cmd(work_dir, date12, inps)
+            data, atr, tmp_inps = prep_slice(cmd)
+            q0, q1, q2, q3 = plot_slice(axes[i], data, atr, tmp_inps)
+        elif plot_type == 'shaded-relief':
+            plot_shaded_relief(axes[i], file, plot_box = plot_box)
+     # plot title
         data_type = get_data_type(file)
         axes[i].set_title(data_type + ': ' + dict['start_date'] + ' - ' + dict['end_date']);
      
@@ -223,17 +232,13 @@ def run_plot(data_dict, inps):
     plt.show()
 
 
-# ## Main function
-# To change options modify the last `cmd = plot_data.py ...` line. Use `--save-gbis` to save as GBIS files
-
 # In[ ]:
 
 
 def main(iargs=None):
+    print('iargs', iargs)
     inps = cmd_line_parse(iargs)    
     print('inps:',inps)
-    #import pdb; pdb.set_trace()
-
     data_dict = run_prepare(inps)
     run_plot(data_dict, inps)
     
@@ -251,9 +256,11 @@ if __name__ == '__main__':
         cmd = 'plot_data.py MaunaLoaSenAT124 MaunaLoaSenDT87 --ref-point 19.55,-155.45'
         cmd = 'plot_data.py MaunaLoaSenDT87 --plot-type velocity'
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --mask-thresh 0.9'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --period 20220801-20221127 --plot-box 19.43:19.5,-155.62:-155.55 --vlim -5 5 --gbis'
+        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --period 20220801-20221127 --plot-box 19.43:19.5,-155.62:-155.55 --vlim -5 5 --save-gbis'
         cmd = 'plot_data.py --help'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127 --vlim -20 20 --save-gbis --GPS --seismicity --fontsize 12'
+        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS'
+        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127 --vlim -20 20 --save-gbis --GPS --seismicity --fontsize 14'
+        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS --GPS-scale-fac 200 --GPS-key-length 1'
 
         # replace multiple spaces with a single space, remove trailing space
         cmd = re.sub(' +', ' ', cmd) 
@@ -262,4 +269,21 @@ if __name__ == '__main__':
         sys.argv = cmd.split()
     print('Command:',sys.argv)
     data_dict, inps, sys.argv = main(sys.argv[1:]) 
+
+
+# In[ ]:
+
+
+# # DEBUG cell: uncomment for access to inps, data_dict 
+# def main(iargs=None):
+#     print('iargs', iargs)
+#     inps = cmd_line_parse(iargs)    
+#     print('inps:',inps)
+#     data_dict = run_prepare(inps)
+#     run_plot(data_dict, inps)  
+#     return data_dict, inps, iargs
+
+# print(cmd)
+# sys.argv = cmd.split()
+# data_dict, inps, sys.argv = main(sys.argv[1:])  
 

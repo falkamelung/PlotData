@@ -18,8 +18,7 @@ def create_parser(subparsers=None):
     synopsis = 'Plotting of InSAR, GPS and Seismicity data'
     epilog = EXAMPLE
     name = __name__.split('.')[-1]
-    parser = create_argument_parser(
-    name, synopsis=synopsis, description=synopsis, epilog=epilog, subparsers=subparsers)
+    parser = create_argument_parser(name, synopsis=synopsis, description=synopsis, epilog=epilog, subparsers=subparsers)
     line_file = os.getenv('RSMASINSAR_HOME') + '/tools/plotdata' + '/data/hawaii_lines_new.mat'
 
     parser.add_argument('data_dir', nargs='*', help='Directory(s) with InSAR data.\n')
@@ -29,12 +28,12 @@ def create_parser(subparsers=None):
     parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=False, help='flag to add seismicity')
     parser.add_argument('--GPS', dest='flag_gps', action='store_true', default=False, help='flag to add GPS vectors')
     parser.add_argument('--plot-type', dest='plot_type', default='velocity', help='Type of plot: velocity, horzvert, ifgram, shaded_relief (Default: velocity).')
-    parser.add_argument('--lines', dest='line_file', default=line_file, help='fault file')
-    parser.add_argument('--GPS-scale-fac', dest='gps_scale_fac', default=500, help='GPS scale factor')
-    parser.add_argument('--GPS-key-length', dest='gps_key_length', default=4, help='GPS key length')
-    parser.add_argument('--GPS-units', dest='gps_unit', default="cm", help='GPS units')
-    parser.add_argument('--unit', dest='unit', default="cm", help='InSAR units')
-    parser.add_argument('--fontsize', dest='font_size', default=16, type=int, help='fontsize for view.py')
+    parser.add_argument('--lines', dest='line_file', default=line_file, help='fault file (Default: plotdata/data/hawaii_lines_new.mat)')
+    parser.add_argument('--GPS-scale-fac', dest='gps_scale_fac', default=500, type=int, help='GPS scale factor (Default: 500)')
+    parser.add_argument('--GPS-key-length', dest='gps_key_length', default=4, type=int, help='GPS key length (Default: 4)')
+    parser.add_argument('--GPS-units', dest='gps_unit', default="cm", help='GPS units (Default: cm)')
+    parser.add_argument('--unit', dest='unit', default="cm", help='InSAR units (Default: cm)')
+    parser.add_argument('--fontsize', dest='font_size', default=12, type=int, help='fontsize for view.py (Default: 12)')
 
     parser.add_argument('--ref-point', dest='reference_lalo', type=str, default=False, help='reference point')
     parser.add_argument('--mask-thresh', dest='mask_vmin', type=float, default=0.7, help='coherence threshold for masking (Default: 0.7)')
@@ -45,6 +44,7 @@ def create_parser(subparsers=None):
 
 def cmd_line_parse(iargs=None):
     """Command line parser."""
+    print('In cmd_line_parse: iargs:',iargs)
     parser = create_parser()
     args = parser.parse_args(args=iargs)
     
@@ -181,7 +181,8 @@ def get_data_type(file):
         elif file == 'hz.h5':
             type = 'Horz'
         else:
-            raise Exception('ERROR: file not up.h5 or horz.h5 -- exiting: ' + file)  
+            type = 'Dem'
+            #raise Exception('ERROR: file not up.h5 or horz.h5 -- exiting: ' + file)  
            
     return type
 
