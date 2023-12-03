@@ -34,6 +34,7 @@ def create_parser(subparsers=None):
     parser.add_argument('--GPS-key-length', dest='gps_key_length', default=4, help='GPS key length')
     parser.add_argument('--GPS-units', dest='gps_unit', default="cm", help='GPS units')
     parser.add_argument('--unit', dest='unit', default="cm", help='InSAR units')
+    parser.add_argument('--fontsize', dest='font_size', default=16, type=int, help='fontsize for view.py')
 
     parser.add_argument('--ref-point', dest='reference_lalo', type=str, default=False, help='reference point')
     parser.add_argument('--mask-thresh', dest='mask_vmin', type=float, default=0.7, help='coherence threshold for masking (Default: 0.7)')
@@ -50,10 +51,6 @@ def cmd_line_parse(iargs=None):
     if len(args.data_dir) < 1 or len(args.data_dir) > 2:
         parser.error('ERROR: You must provide 1 or 2 directory paths.')
         
-    print('QQ plot_box',args.plot_box)
-    print('QQ flag_gps',args.flag_gps)
-    print('QQ flag_save_gbis',args.flag_save_gbis)
-    print('QQ data_dir',args.data_dir)
     #import pdb; pdb.set_trace()
     inps = args
     inps.plot_box = [float(val) for val in args.plot_box.replace(':', ',').split(',')]  # converts to plot_box=[19.3, 19.6, -155.8, -155.4]
@@ -98,9 +95,9 @@ def save_gbis_plotdata(eos_file, geo_vel_file, start_date_mod, end_date_mod):
 
     cmd = f'timeseries2velocity.py {timeseries_file} --start-date {start_date_mod} --end-date {end_date_mod} --output {vel_file}' 
     cmd1 = f'save_gbis.py {vel_file} -g {os.path.dirname(eos_file)}/inputs/geometryRadar.h5' 
-    print('QQ0 timeseries2velocity command:',cmd)
+    print('timeseries2velocity command:',cmd)
     output = subprocess.check_output(cmd.split())
-    print('QQ1 save_gbis command:',cmd1.split())
+    print('ave_gbis command:',cmd1.split())
     output = subprocess.check_output(cmd1.split())
 
 def remove_directory_containing_mintpy_from_path(path):

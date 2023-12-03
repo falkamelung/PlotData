@@ -16,7 +16,7 @@ def generate_view_ifgram_cmd(work_dir, date12, inps):
 def generate_view_velocity_cmd(vel_file,  inps):
     cmd = 'view.py {} velocity '.format(vel_file)
     cmd += f" --sub-lat {inps.plot_box[0]} {inps.plot_box[1]} --sub-lon {inps.plot_box[2]} {inps.plot_box[3]} "
-    cmd += f"--notitle -u {inps.unit} -c jet --noverbose" 
+    cmd += f"--notitle -u {inps.unit} --fontsize {inps.font_size} -c jet --noverbose" 
     if inps.vlim:
         cmd += f" --vlim {inps.vlim[0]} {inps.vlim[1]}"
         

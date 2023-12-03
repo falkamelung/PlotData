@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# ## Plot InSAR, GPS and seismicity data
+#   It assumes data are located in  $SCRATCHDIR in  MintPy convention (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
+
 # In[ ]:
 
 
@@ -71,9 +74,8 @@ def run_prepare(inps):
     else:
         inps.gps_dir = os.getenv('SCRATCHDIR') + '/MaunaLoa/MLtry/data'
     inps.gps_list_file = inps.gps_dir + '/GPS_BenBrooks_03-05full.txt'
-    inps.dem_file = inps.gps_dir + '/data/demGeo.h5'  
+    inps.dem_file = inps.gps_dir + '/demGeo.h5'  
 
-    print('QQQQ',inps.dem_file)
     # get dem, earthquake and GPS data, normalize event times for plotting)
     dem_shade, dem_extent = get_basemap(inps.dem_file)
 
@@ -90,6 +92,7 @@ def run_prepare(inps):
     gps_key_length = inps.gps_key_length
     gps_unit = inps.gps_unit
     unit = inps.unit
+    font_size = inps.font_size
     reference_lalo = inps.reference_lalo
     mask_vmin = inps.mask_vmin
     vlim = inps.vlim
@@ -117,6 +120,12 @@ def run_prepare(inps):
             save_gdal.main( cmd.split() )
             cmd = f'{geo_vel_file} --mask {temp_coh_file} --mask-vmin { mask_vmin} --outfile {geo_vel_file}'
             mask.main( cmd.split() )
+            if reference_lalo:
+                cmd = f'{geo_vel_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
+                reference_point.main( cmd.split() )
+                cmd = f'{geo_vel_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
+                reference_point.main( cmd.split() )
+
             if flag_save_gbis:
                 save_gbis_plotdata(eos_file, geo_vel_file, start_date_mod, end_date_mod)
 
@@ -129,13 +138,7 @@ def run_prepare(inps):
         data_dict = {}
         q, q, geo_vel_file0 = get_eos_file( prepend_scratchdir_if_needed(data_dir[0]) )
         q, q, geo_vel_file1 = get_eos_file( prepend_scratchdir_if_needed(data_dir[1]) )
-    
-        if  reference_lalo:
-            cmd = f'{geo_vel_file0} --lat {reference_lalo[0]} --lon {reference_lal[1]}'
-            reference_point.main( cmd.split() )
-            cmd = f'{geo_vel_file1} --lat {reference_lal[0]} --lon {reference_lal[1]}'
-            reference_point.main( cmd.split() )
-    
+        
         cmd = f'{geo_vel_file0} {geo_vel_file1}'
         asc_desc2horz_vert.main( cmd.split() )
         data_dict['up.h5'] = {'start_date': start_date, 'end_date': end_date}
@@ -147,6 +150,7 @@ def run_prepare(inps):
 
 
 def run_plot(data_dict, inps):
+
     data_dir = inps.data_dir
     gps_dir = inps.gps_dir
     gps_list_file = inps.gps_list_file
@@ -160,6 +164,7 @@ def run_plot(data_dict, inps):
     gps_key_length = inps.gps_key_length
     gps_unit = inps.gps_unit
     unit = inps.unit
+    font_size = inps.font_size
     reference_lalo = inps.reference_lalo
     mask_vmin = inps.mask_vmin
     vlim = inps.vlim
@@ -174,10 +179,11 @@ def run_plot(data_dict, inps):
     # plotting
     if len(data_dict) == 2:
         fig, axes = plt.subplots(1, 2, figsize=[12, 5] )
+        inps.font_size = int(inps.font_size*0.7)  
     else:
         fig, axes = plt.subplots(figsize=[12, 5] )
-        axes = [axes]
-    
+        axes = [axes] 
+        
     for i, (file, dict) in enumerate(data_dict.items()):
         axes[i].set_xlim(plot_box[2], plot_box[3])
         axes[i].set_ylim(plot_box[0], plot_box[1])
@@ -203,17 +209,22 @@ def run_plot(data_dict, inps):
             norm_times = normalize_earthquake_times(events_df, start_date, end_date)
             cmap = modify_colormap( cmap_name = cmap_name, exclude_beginning = exclude_beginning, exclude_end = exclude_end, show = False)
             
-            axes[i].scatter(events_df["Longitude"],events_df["Latitude"],s=2*events_df["Magnitude"] ** 3, c=norm_times,cmap=cmap,alpha=0.8)
-            add_colorbar(ax = axes[i], cmap = cmap, start_date = start_date, end_date = end_date)
-    
+            # This works but plotsize is changed
+            # if  not ( len(data_dict.items()) == 2 and i ==0 ):
+            #     axes[i].scatter(events_df["Longitude"],events_df["Latitude"],s=2*events_df["Magnitude"] ** 3, c=norm_times,cmap=cmap,alpha=0.8)
+            #     add_colorbar(ax = axes[i], cmap = cmap, start_date = start_date, end_date = end_date)
+        
         if flag_gps:
             gps,lon,lat,U,V,Z,quiver_label = get_gps(gps_dir, gps_list_file, plot_box, start_date, end_date, gps_unit, inps.gps_key_length)
             (gps_dir, gps_list_file, plot_box, start_date, end_date, gps_unit, gps_key_length)
             quiv=axes[i].quiver(lon, lat, U, V, scale = gps_scale_fac, color='blue')
             axes[i].quiverkey(quiv, -155.50, 19.57, gps_key_length*10 , quiver_label, labelpos='N',coordinates='data',
-                              color='blue',fontproperties={'size': 20}) 
+                              color='blue',fontproperties={'size': font_size}) 
     plt.show()
 
+
+# ## Main function
+# To change options modify the last `cmd = plot_data.py ...` line. Use `--save-gbis` to save as GBIS files
 
 # In[ ]:
 
@@ -221,7 +232,8 @@ def run_plot(data_dict, inps):
 def main(iargs=None):
     inps = cmd_line_parse(iargs)    
     print('inps:',inps)
-    
+    #import pdb; pdb.set_trace()
+
     data_dict = run_prepare(inps)
     run_plot(data_dict, inps)
     
@@ -239,10 +251,9 @@ if __name__ == '__main__':
         cmd = 'plot_data.py MaunaLoaSenAT124 MaunaLoaSenDT87 --ref-point 19.55,-155.45'
         cmd = 'plot_data.py MaunaLoaSenDT87 --plot-type velocity'
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --mask-thresh 0.9'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127'       
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --period 20220801-20221127 --plot-box 19.43:19.5,-155.62:-155.55 --vlim -5 5 --gbis'
         cmd = 'plot_data.py --help'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127 --vlim -20 20 --save-gbis --GPS --seismicity'
+        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127 --vlim -20 20 --save-gbis --GPS --seismicity --fontsize 12'
 
         # replace multiple spaces with a single space, remove trailing space
         cmd = re.sub(' +', ' ', cmd) 
@@ -251,10 +262,4 @@ if __name__ == '__main__':
         sys.argv = cmd.split()
     print('Command:',sys.argv)
     data_dict, inps, sys.argv = main(sys.argv[1:]) 
-
-
-# In[ ]:
-
-
-
 
