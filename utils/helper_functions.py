@@ -2,6 +2,7 @@
 import os
 import argparse
 import subprocess
+import glob
 from mintpy.utils import readfile, writefile
 from mintpy.objects import HDFEOS
 from mintpy.utils.arg_utils import create_argument_parser
@@ -27,7 +28,7 @@ def create_parser(subparsers=None):
     parser.add_argument('--period', dest='period', default='20220101-20221101', help='time period (20220101-20221101)')    
     parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=False, help='flag to add seismicity')
     parser.add_argument('--GPS', dest='flag_gps', action='store_true', default=False, help='flag to add GPS vectors')
-    parser.add_argument('--plot-type', dest='plot_type', default='velocity', help='Type of plot: velocity, horzvert, ifgram, shaded_relief (Default: velocity).')
+    parser.add_argument('--plot-type', dest='plot_type', default='velocity', help='Type of plot: velocity, horzvert, ifgram, step, shaded_relief (Default: velocity).')
     parser.add_argument('--lines', dest='line_file', default=line_file, help='fault file (Default: plotdata/data/hawaii_lines_new.mat)')
     parser.add_argument('--GPS-scale-fac', dest='gps_scale_fac', default=500, type=int, help='GPS scale factor (Default: 500)')
     parser.add_argument('--GPS-key-length', dest='gps_key_length', default=4, type=int, help='GPS key length (Default: 4)')
@@ -70,7 +71,39 @@ def is_jupyter():
     except:
         jn = False
     return jn
+
+def get_file_names(path):
+    """gets the youngest eos5 file. Path can be: 
+    MaunaLoaSenAT124
+    MaunaLoaSenAT124/mintpy/S1_qq.he5
+    ~/onedrive/scratch/MaunaLoaSenAT124/mintpy/S1_qq.he5'
+    """
+    if os.path.isfile(path):
+        eos_file = path
+    elif os.path.isfile(os.getenv('SCRATCHDIR') + '/' + path):
+        eos_file = os.getenv('SCRATCHDIR') + '/' + path
+    else:
+        if not 'mintpy' in path:
+            files = glob.glob( path + '/mintpy/*.he5' )
+        else:
+            files = glob.glob( path + '/*.he5' )
+        eos_file = max(files, key=os.path.getctime)
+
+    keywords = ['SenDT', 'SenAT', 'CskAT', 'CskDT']
+    elements = path.split(os.sep)   
+    project_dir = None
+    for element in elements:
+        for keyword in keywords:
+            if keyword in element:
+                project_dir = element
+                project_base_dir = element.split(keyword)[0]
+                track_dir = keyword + element.split(keyword)[1]
+                break
     
+    geo_vel_file = eos_file.rsplit('/', 1)[0] + '/geo/geo_velocity.h5'
+    out_geo_vel_file = project_base_dir + '/' + track_dir + '/geo_velocity.h5'
+
+    return eos_file, geo_vel_file, project_base_dir, out_geo_vel_file    
 
 def prepend_scratchdir_if_needed(path):
     """ Prepends $SCRATCHDIR if path is project name (got complicated; neet to refactor) """

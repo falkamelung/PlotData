@@ -40,14 +40,14 @@ from mintpy.objects.gps import search_gps, GPS
 from mintpy.objects import sensor
 from mintpy.view import prep_slice, plot_slice
 from mintpy.cli import view, timeseries2velocity, reference_point, asc_desc2horz_vert, save_gdal, mask
-from utils.helper_functions import is_jupyter, create_parser, cmd_line_parse
+from utils.helper_functions import is_jupyter, create_parser, cmd_line_parse, get_file_names
 from utils.helper_functions import prepend_scratchdir_if_needed, find_nearest_start_end_date
 from utils.helper_functions import get_data_type, get_dem_extent, save_gbis_plotdata
 from utils.plot_functions import get_basemap, plot_shaded_relief
 from utils.plot_functions import modify_colormap, add_colorbar
 from utils.seismicity import get_earthquakes, normalize_earthquake_times
 from utils.gps import get_gps
-from utils.insar import get_eos_file, generate_view_velocity_cmd, generate_view_ifgram_cmd
+from utils.insar import generate_view_velocity_cmd, generate_view_ifgram_cmd
 import subprocess
 
 # %load_ext jupyter_ai
@@ -102,36 +102,48 @@ def run_prepare(inps):
     start_date = inps.period[0]
     end_date = inps.period[1]
 
-
     # calculate velocities for periods of interest
     data_dict = {}
     if plot_type == 'velocity' or plot_type == 'horzvert':
-        for data_dir in data_dir:
-            work_dir = prepend_scratchdir_if_needed(data_dir)
-            eos_file, out_dir, geo_vel_file = get_eos_file(work_dir)
-            temp_coh_file=geo_vel_file.replace('velocity.h5','temporalCoherence.tif')
+        for dir in data_dir:
+            work_dir = prepend_scratchdir_if_needed(dir)
+            eos_file, geo_vel_fie, out_dir, out_geo_vel_file = get_file_names(work_dir)
+            temp_coh_file=out_geo_vel_file.replace('velocity.h5','temporalCoherence.tif')
             start_date_mod, end_date_mod = find_nearest_start_end_date(eos_file, start_date, end_date)
             # get masked geo_velocity.h5 with MintPy
-            # cmd = f'{eos_file} --start-date {start_date_mod} --end-date {end_date_mod} --output {geo_vel_file}'
+            # cmd = f'{eos_file} --start-date {start_date_mod} --end-date {end_date_mod} --output {out_geo_vel_file}'
             # timeseries2velocity.main( cmd.split() )
-            cmd = f'{eos_file} --start-date {start_date_mod} --end-date {end_date_mod} --output {geo_vel_file}'
+            cmd = f'{eos_file} --start-date {start_date_mod} --end-date {end_date_mod} --output {out_geo_vel_file}'
             cmd =['timeseries2velocity.py'] + cmd.split()
             output = subprocess.check_output(cmd)
             #print(output.decode())
             cmd = f'{eos_file} --dset temporalCoherence --output {temp_coh_file}'
             save_gdal.main( cmd.split() )
-            cmd = f'{geo_vel_file} --mask {temp_coh_file} --mask-vmin { mask_vmin} --outfile {geo_vel_file}'
+            cmd = f'{out_geo_vel_file} --mask {temp_coh_file} --mask-vmin { mask_vmin} --outfile {out_geo_vel_file}'
             mask.main( cmd.split() )
             if reference_lalo:
-                cmd = f'{geo_vel_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
-                reference_point.main( cmd.split() )
-                cmd = f'{geo_vel_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
+                cmd = f'{out_geo_vel_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
                 reference_point.main( cmd.split() )
             if flag_save_gbis:
-                save_gbis_plotdata(eos_file, geo_vel_file, start_date_mod, end_date_mod)
-            data_dict[geo_vel_file] = {
+                save_gbis_plotdata(eos_file, out_geo_vel_file, start_date_mod, end_date_mod)
+            data_dict[out_geo_vel_file] = {
             'start_date': start_date_mod,
             'end_date': end_date_mod
+            }
+    elif plot_type == 'step':
+        for dir in data_dir:
+            work_dir = prepend_scratchdir_if_needed(dir)
+            eos_file, geo_vel_file, out_dir, out_geo_vel_file = get_file_names(work_dir)
+            geo_step, atr = readfile.read(geo_vel_file, datasetName='step20210306')
+            out_geo_step_file = out_geo_vel_file.replace('velocity','step')
+            print('QQQ:',out_geo_vel_file,out_geo_step_file)
+            writefile.write(geo_step, out_file=out_geo_step_file, metadata=atr)
+            if reference_lalo:
+                cmd = f'{out_geo_step_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
+                reference_point.main( cmd.split() )
+            data_dict[out_geo_step_file] = {
+            'start_date': atr['mintpy.timeFunc.stepDate'],
+            'end_date': atr['mintpy.timeFunc.stepDate']
             }
     elif plot_type == 'shaded-relief':
         data_dict[dem_file] = {
@@ -142,10 +154,10 @@ def run_prepare(inps):
     # calculate horizontal and vertical
     if  plot_type == 'horzvert':
         data_dict = {}
-        q, q, geo_vel_file0 = get_eos_file( prepend_scratchdir_if_needed(data_dir[0]) )
-        q, q, geo_vel_file1 = get_eos_file( prepend_scratchdir_if_needed(data_dir[1]) )
+        q, q, q, out_geo_vel_file0 = get_file_names( prepend_scratchdir_if_needed(data_dir[0]) )
+        q, q, q, out_geo_vel_file1 = get_file_names( prepend_scratchdir_if_needed(data_dir[1]) )
         
-        cmd = f'{geo_vel_file0} {geo_vel_file1}'
+        cmd = f'{out_geo_vel_file0} {out_geo_vel_file1}'
         asc_desc2horz_vert.main( cmd.split() )
         data_dict['up.h5'] = {'start_date': start_date, 'end_date': end_date}
         data_dict['hz.h5'] = {'start_date': start_date, 'end_date': end_date}
@@ -194,8 +206,8 @@ def run_plot(data_dict, inps):
         axes[i].set_xlim(plot_box[2], plot_box[3])
         axes[i].set_ylim(plot_box[0], plot_box[1])
         
-        if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'ifgram':
-            if plot_type == 'velocity' or plot_type == 'horzvert':
+        if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'ifgram' or plot_type == 'step':
+            if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'step':
                 cmd = generate_view_velocity_cmd(file, inps) 
             elif plot_type == 'ifgram':
                 cmd = generate_view_ifgram_cmd(work_dir, date12, inps)
@@ -218,10 +230,10 @@ def run_plot(data_dict, inps):
             norm_times = normalize_earthquake_times(events_df, start_date, end_date)
             cmap = modify_colormap( cmap_name = cmap_name, exclude_beginning = exclude_beginning, exclude_end = exclude_end, show = False)
             
-            # This works but plotsize is changed
-            # if  not ( len(data_dict.items()) == 2 and i ==0 ):
-            #     axes[i].scatter(events_df["Longitude"],events_df["Latitude"],s=2*events_df["Magnitude"] ** 3, c=norm_times,cmap=cmap,alpha=0.8)
-            #     add_colorbar(ax = axes[i], cmap = cmap, start_date = start_date, end_date = end_date)
+            axes[i].scatter(events_df["Longitude"],events_df["Latitude"],s=2*events_df["Magnitude"] ** 3, c=norm_times,cmap=cmap,alpha=0.8)
+            # plot scale only is one ployy
+            if  not ( len(data_dict.items()) == 2):
+                add_colorbar(ax = axes[i], cmap = cmap, start_date = start_date, end_date = end_date)
         
         if flag_gps:
             gps,lon,lat,U,V,Z,quiver_label = get_gps(gps_dir, gps_list_file, plot_box, start_date, end_date, gps_unit, inps.gps_key_length)
@@ -258,9 +270,9 @@ if __name__ == '__main__':
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --mask-thresh 0.9'
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --period 20220801-20221127 --plot-box 19.43:19.5,-155.62:-155.55 --vlim -5 5 --save-gbis'
         cmd = 'plot_data.py --help'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS'
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127 --vlim -20 20 --save-gbis --GPS --seismicity --fontsize 14'
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS --GPS-scale-fac 200 --GPS-key-length 1'
+        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS --seismicity'
 
         # replace multiple spaces with a single space, remove trailing space
         cmd = re.sub(' +', ' ', cmd) 
@@ -274,7 +286,7 @@ if __name__ == '__main__':
 # In[ ]:
 
 
-# # DEBUG cell: uncomment for access to inps, data_dict 
+# # DEBUG CELL: uncomment for access to inps, data_dict 
 # def main(iargs=None):
 #     print('iargs', iargs)
 #     inps = cmd_line_parse(iargs)    
@@ -283,6 +295,7 @@ if __name__ == '__main__':
 #     run_plot(data_dict, inps)  
 #     return data_dict, inps, iargs
 
+# cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_2_8_step  MaunaLoaSenAT124/mintpy_2_8_step --plot-type step --period 20201001-20210306 --ref-point 19.475,-155.6 --plot-box 19.43:19.5,-155.62:-155.55 --vlim -6 6'
 # print(cmd)
 # sys.argv = cmd.split()
 # data_dict, inps, sys.argv = main(sys.argv[1:])  

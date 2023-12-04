@@ -23,35 +23,4 @@ def generate_view_velocity_cmd(vel_file,  inps):
     # print(cmd)
     return cmd
     
-def get_eos_file(path):
-    """gets the youngest eos5 file. Path can be: 
-    MaunaLoaSenAT124
-    MaunaLoaSenAT124/mintpy/S1_qq.he5
-    ~/onedrive/scratch/MaunaLoaSenAT124/mintpy/S1_qq.he5'
-    """
-    if os.path.isfile(path):
-        eos_file = path
-    elif os.path.isfile(os.getenv('SCRATCHDIR') + '/' + path):
-        eos_file = os.getenv('SCRATCHDIR') + '/' + path
-    else:
-        if not 'mintpy' in path:
-            files = glob.glob( path + '/mintpy/*.he5' )
-        else:
-            files = glob.glob( path + '/*.he5' )
-        eos_file = max(files, key=os.path.getctime)
-
-    keywords = ['SenDT', 'SenAT', 'CskAT', 'CskDT']
-    elements = path.split(os.sep)   
-    project_dir = None
-    for element in elements:
-        for keyword in keywords:
-            if keyword in element:
-                project_dir = element
-                project_base_dir = element.split(keyword)[0]
-                track_dir = keyword + element.split(keyword)[1]
-                break
-    
-    vel_file = project_base_dir + '/' + track_dir + '/geo_velocity.h5'
-
-    return eos_file, project_base_dir, vel_file
     
