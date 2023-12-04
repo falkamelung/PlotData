@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
-get_ipython().system('echo $GPSDIR')
-
+# ## Plot InSAR, GPS and seismicity data
+# Assumes that the data are located in  `$SCRATCHDIR` (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
+# Output is  written into  `$SCRATCHDIR/MaunaLoa/SenDT87` and `$SCRATCHDIR/MaunaLoa/SenAT124`
+# 
+# Run all cells of this notebook for an example. The  plot options can be changed by editing the last `cmd = plot_data.py ...`  in the  cell of the `main` functions. Use -`-save-gbis` to save as GBIS files.
 
 # In[ ]:
 
@@ -61,11 +61,6 @@ if 'ipykernel' in sys.modules:
 else:
     pass
 
-
-# ## Plot InSAR, GPS and seismicity data
-# Assumes the data are located in  $SCRATCHDIR in  MintPy convention (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
-# 
-# For an axample run all cells of this notebook. The  plot options can be changed by editing the last `cmd = plot_data.py ...`  in the  cell of the `main` functions. Use --save-gbis to save as GBIS files.
 
 # In[ ]:
 
@@ -256,6 +251,7 @@ def run_plot(data_dict, inps):
 
 
 def main(iargs=None):
+    chdir(os.getenv('
     print('iargs', iargs)
     inps = cmd_line_parse(iargs)    
     print('inps:',inps)
@@ -307,10 +303,4 @@ if __name__ == '__main__':
 # print(cmd)
 # sys.argv = cmd.split()
 # data_dict, inps, sys.argv = main(sys.argv[1:])  
-
-
-# In[ ]:
-
-
-
 
