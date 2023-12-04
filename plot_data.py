@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Plot InSAR, GPS and seismicity data
-# Assumes the data are located in  $SCRATCHDIR in  MintPy convention (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
-# 
-# For an axample run all cells of this notebook. The  plot options can be changed by editing the last `cmd = plot_data.py ...`  in the  cell of the `main` functions. Use --save-gbis to save as GBIS files.
+# In[ ]:
+
+
+get_ipython().system('echo $GPSDIR')
+
 
 # In[ ]:
 
@@ -61,6 +62,11 @@ else:
     pass
 
 
+# ## Plot InSAR, GPS and seismicity data
+# Assumes the data are located in  $SCRATCHDIR in  MintPy convention (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
+# 
+# For an axample run all cells of this notebook. The  plot options can be changed by editing the last `cmd = plot_data.py ...`  in the  cell of the `main` functions. Use --save-gbis to save as GBIS files.
+
 # In[ ]:
 
 
@@ -72,9 +78,11 @@ def run_prepare(inps):
     
     # Hardwired for Hawaii
     if 'GPSDIR' in os.environ:
-        inps.gps_dir = os.getenv('GPSDIR')
+        inps.gps_dir = os.getenv('GPSDIR') + '/data'
     else:
         inps.gps_dir = os.getenv('SCRATCHDIR') + '/MaunaLoa/MLtry/data'
+    
+    print('QQ inps.gps_dir:' , inps.gps_dir)
     inps.gps_list_file = inps.gps_dir + '/GPS_BenBrooks_03-05full.txt'
     inps.dem_file = inps.gps_dir + '/demGeo.h5'  
 
@@ -299,4 +307,10 @@ if __name__ == '__main__':
 # print(cmd)
 # sys.argv = cmd.split()
 # data_dict, inps, sys.argv = main(sys.argv[1:])  
+
+
+# In[ ]:
+
+
+
 
