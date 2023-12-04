@@ -251,7 +251,7 @@ def run_plot(data_dict, inps):
 
 
 def main(iargs=None):
-    chdir(os.getenv('
+    chdir(os.getenv('SCRATCHDIR'))
     print('iargs', iargs)
     inps = cmd_line_parse(iargs)    
     print('inps:',inps)
