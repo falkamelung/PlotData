@@ -77,12 +77,9 @@ def run_prepare(inps):
     else:
         inps.gps_dir = os.getenv('SCRATCHDIR') + '/MaunaLoa/MLtry/data'
     
-    print('QQ inps.gps_dir:' , inps.gps_dir)
+    print('run_prepare: inps.gps_dir:' , inps.gps_dir)
     inps.gps_list_file = inps.gps_dir + '/GPS_BenBrooks_03-05full.txt'
     inps.dem_file = inps.gps_dir + '/demGeo.h5'  
-
-    # get dem, earthquake and GPS data, normalize event times for plotting)
-    dem_shade, dem_extent = get_basemap(inps.dem_file)
 
     data_dir = inps.data_dir
     gps_dir = inps.gps_dir
@@ -110,7 +107,7 @@ def run_prepare(inps):
     if plot_type == 'velocity' or plot_type == 'horzvert':
         for dir in data_dir:
             work_dir = prepend_scratchdir_if_needed(dir)
-            eos_file, geo_vel_fie, out_dir, out_geo_vel_file = get_file_names(work_dir)
+            eos_file, geo_vel_fie, geo_geometry_file, out_dir, out_geo_vel_file = get_file_names(work_dir)
             temp_coh_file=out_geo_vel_file.replace('velocity.h5','temporalCoherence.tif')
             start_date_mod, end_date_mod = find_nearest_start_end_date(eos_file, start_date, end_date)
             # get masked geo_velocity.h5 with MintPy
@@ -136,10 +133,9 @@ def run_prepare(inps):
     elif plot_type == 'step':
         for dir in data_dir:
             work_dir = prepend_scratchdir_if_needed(dir)
-            eos_file, geo_vel_file, out_dir, out_geo_vel_file = get_file_names(work_dir)
+            eos_file, geo_vel_file, geo_geometry_file, out_dir, out_geo_vel_file = get_file_names(work_dir)
             geo_step, atr = readfile.read(geo_vel_file, datasetName='step20210306')
             out_geo_step_file = out_geo_vel_file.replace('velocity','step')
-            print('QQQ:',out_geo_vel_file,out_geo_step_file)
             writefile.write(geo_step, out_file=out_geo_step_file, metadata=atr)
             if reference_lalo:
                 cmd = f'{out_geo_step_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
@@ -157,8 +153,8 @@ def run_prepare(inps):
     # calculate horizontal and vertical
     if  plot_type == 'horzvert':
         data_dict = {}
-        q, q, q, out_geo_vel_file0 = get_file_names( prepend_scratchdir_if_needed(data_dir[0]) )
-        q, q, q, out_geo_vel_file1 = get_file_names( prepend_scratchdir_if_needed(data_dir[1]) )
+        q, q, q, q, out_geo_vel_file0 = get_file_names( prepend_scratchdir_if_needed(data_dir[0]) )
+        q, q, q, q, out_geo_vel_file1 = get_file_names( prepend_scratchdir_if_needed(data_dir[1]) )
         
         cmd = f'{out_geo_vel_file0} {out_geo_vel_file1}'
         asc_desc2horz_vert.main( cmd.split() )
@@ -232,9 +228,9 @@ def run_plot(data_dict, inps):
             events_df = get_earthquakes(start_date, end_date, plot_box)
             norm_times = normalize_earthquake_times(events_df, start_date, end_date)
             cmap = modify_colormap( cmap_name = cmap_name, exclude_beginning = exclude_beginning, exclude_end = exclude_end, show = False)
-            
-            axes[i].scatter(events_df["Longitude"],events_df["Latitude"],s=2*events_df["Magnitude"] ** 3, c=norm_times,cmap=cmap,alpha=0.8)
-            # plot scale only is one ployy
+            if not events_df.shape[0] == 0:
+                axes[i].scatter(events_df["Longitude"],events_df["Latitude"],s=2*events_df["Magnitude"] ** 3, c=norm_times,cmap=cmap,alpha=0.8)
+            # plot scale only if there is only one plot (if there are no two plots)
             if  not ( len(data_dict.items()) == 2):
                 add_colorbar(ax = axes[i], cmap = cmap, start_date = start_date, end_date = end_date)
         
@@ -277,6 +273,10 @@ if __name__ == '__main__':
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127 --vlim -20 20 --save-gbis --GPS --seismicity --fontsize 14'
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS --GPS-scale-fac 200 --GPS-key-length 1'
         cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS --seismicity'
+        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --plot-box 19.43:19.5,-155.62:-155.55  --seismicity'
+        cmd = 'plot_data.py GalapagosSenDT128/mintpy  --plot-type=velocity --plot-box=-0.52:-0.28,-91.7:-91.4 --period=20200131-20231231 --GPS --seismicity'
+        cmd = 'plot_data.py GalapagosSenDT128/mintpy GalapagosSenAT106/mintpy_orig  --plot-type=horzvert --plot-box=-1.0:-0.75,-91.55:-91.25 --period=20190101-20230801 --vlim -5 5'
+        cmd = 'plot_data.py GalapagosSenDT128/mintpy GalapagosSenAT106/mintpy_orig  --plot-type=horzvert --plot-box=-1.0:-0.75,-91.55:-91.25 --period=20220101-20230831 --vlim -5 5'
 
         # replace multiple spaces with a single space, remove trailing space
         cmd = re.sub(' +', ' ', cmd) 

@@ -23,7 +23,7 @@ def create_parser(subparsers=None):
     line_file = os.getenv('RSMASINSAR_HOME') + '/tools/plotdata' + '/data/hawaii_lines_new.mat'
 
     parser.add_argument('data_dir', nargs='*', help='Directory(s) with InSAR data.\n')
-    parser.add_argument('--plot-box', '--subset-lalo', dest='plot_box', type=str, default='19.29:19.6,-155.79:-155.41',
+    parser.add_argument('--plot-box',  nargs='?', dest='plot_box', type=str, default='19.29:19.6,-155.79:-155.41',
                         help='geographic area plotted')
     parser.add_argument('--period', dest='period', default='20220101-20221101', help='time period (20220101-20221101)')    
     parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=False, help='flag to add seismicity')
@@ -45,15 +45,20 @@ def create_parser(subparsers=None):
 
 def cmd_line_parse(iargs=None):
     """Command line parser."""
-    print('In cmd_line_parse: iargs:',iargs)
     parser = create_parser()
-    args = parser.parse_args(args=iargs)
+    print('cmd_line_parse: iargs:',iargs)
+    print('cmd_line_parse: parser:',parser)
     
+    #import pdb; pdb.set_trace()
+    args = parser.parse_args(args=iargs)
+    print('cmd_line_parse: args:',args)
+    print('cmd_line_parse: args.plot_box:',args.plot_box)
+
     if len(args.data_dir) < 1 or len(args.data_dir) > 2:
         parser.error('ERROR: You must provide 1 or 2 directory paths.')
         
-    #import pdb; pdb.set_trace()
     inps = args
+    print('cmd_line_parse: inps.plot_box:',inps.plot_box)
     inps.plot_box = [float(val) for val in args.plot_box.replace(':', ',').split(',')]  # converts to plot_box=[19.3, 19.6, -155.8, -155.4]
     if inps.reference_lalo:
         reference_lalo = args.reference_lalo
@@ -101,9 +106,11 @@ def get_file_names(path):
                 break
     
     geo_vel_file = eos_file.rsplit('/', 1)[0] + '/geo/geo_velocity.h5'
+    geo_geometry_file = eos_file.rsplit('/', 1)[0] + '/geo/geo_geometryRadar.h5'
+
     out_geo_vel_file = project_base_dir + '/' + track_dir + '/geo_velocity.h5'
 
-    return eos_file, geo_vel_file, project_base_dir, out_geo_vel_file    
+    return eos_file, geo_vel_file, geo_geometry_file, project_base_dir, out_geo_vel_file    
 
 def prepend_scratchdir_if_needed(path):
     """ Prepends $SCRATCHDIR if path is project name (got complicated; neet to refactor) """
@@ -155,9 +162,9 @@ def find_nearest_start_end_date(fname, start_date, end_date):
     end_date_int = int(end_date)
     
     if start_date_int < int(dateList[0]):
-        raise Exception("ERROR: No earlier date found than ", start_date_int )
+        raise Exception("USER ERROR: No date found earlier than ", start_date_int )
     if end_date_int > int(dateList[-1]):
-        raise Exception("ERROR:  No later date found than ", end_date_int )
+        raise Exception("USER ERROR:  No date found later than ", end_date_int )
     
     # print ('start_date_int: ',start_date_int)
     for date in reversed(dateList):
@@ -206,7 +213,7 @@ def get_data_type(file):
         elif direction == 'D':
             type = 'Desc'
         else:
-            raise Exception('ERROR: direction is not A or D -- exiting ')  
+            raise Exception('USER ERROR: direction is not A or D -- exiting ')  
     else:
         #print("File does not contain 'Sen' or 'Csk':", file)
         if file == 'up.h5':
