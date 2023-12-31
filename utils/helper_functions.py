@@ -5,7 +5,6 @@ import subprocess
 import glob
 from mintpy.utils import readfile, writefile
 from mintpy.objects import HDFEOS
-from mintpy.utils.arg_utils import create_argument_parser
 import numpy as np
 from pathlib import Path
 
@@ -18,8 +17,9 @@ EXAMPLE = """example:
 def create_parser(subparsers=None):
     synopsis = 'Plotting of InSAR, GPS and Seismicity data'
     epilog = EXAMPLE
-    name = __name__.split('.')[-1]
-    parser = create_argument_parser(name, synopsis=synopsis, description=synopsis, epilog=epilog, subparsers=subparsers)
+    # parser = create_argument_parser(name, synopsis=synopsis, description=synopsis, epilog=epilog, subparsers=subparsers)
+    parser = argparse.ArgumentParser(description=synopsis, epilog=epilog)
+    
     line_file = os.getenv('RSMASINSAR_HOME') + '/tools/plotdata' + '/data/hawaii_lines_new.mat'
 
     parser.add_argument('data_dir', nargs='*', help='Directory(s) with InSAR data.\n')
