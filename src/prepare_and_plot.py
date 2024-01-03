@@ -6,32 +6,16 @@
 # Output is  written into  `$SCRATCHDIR/MaunaLoa/SenDT87` and `$SCRATCHDIR/MaunaLoa/SenAT124`
 
 import os
-import numpy as np
-import pandas as pd
-from pandas import concat
-from pandas import DataFrame
-from pathlib import Path
-from dateutil.relativedelta import relativedelta
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.colors import LinearSegmentedColormap
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import contextily as ctx
 import scipy.io as sio
-from sklearn import datasets, linear_model
-from datetime import datetime, timezone
-from mintpy.utils import readfile, writefile, utils as ut
+from mintpy.utils import readfile, writefile
 from mintpy.defaults.plot import *
-from mintpy.objects.gps import search_gps, GPS
-from mintpy.objects import sensor
 from mintpy.view import prep_slice, plot_slice
-from mintpy.cli import view, timeseries2velocity, reference_point, asc_desc2horz_vert, save_gdal, mask
-from helper_functions import is_jupyter, create_parser, cmd_line_parse, get_file_names
+from mintpy.cli import reference_point, asc_desc2horz_vert, save_gdal, mask
+from helper_functions import get_file_names
 from helper_functions import prepend_scratchdir_if_needed, find_nearest_start_end_date
-from helper_functions import get_data_type, get_dem_extent, save_gbis_plotdata
-from plot_functions import get_basemap, plot_shaded_relief
+from helper_functions import get_data_type, save_gbis_plotdata
+from plot_functions import plot_shaded_relief
 from plot_functions import modify_colormap, add_colorbar
 from seismicity import get_earthquakes, normalize_earthquake_times
 from gps import get_gps

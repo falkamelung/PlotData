@@ -83,8 +83,8 @@ def main():
     message_rsmas.log(os.getcwd(), os.path.basename(__file__) + ' ' + ' '.join(sys.argv[1:]))
 
     # import
-    from prepare_plot import run_prepare
-    from prepare_plot import run_plot
+    from prepare_and_plot import run_prepare
+    from prepare_and_plot import run_plot
     
     os.chdir(os.getenv('SCRATCHDIR'))
     data_dict = run_prepare(inps)
