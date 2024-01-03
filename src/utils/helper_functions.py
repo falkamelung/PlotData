@@ -43,6 +43,16 @@ def create_parser(subparsers=None):
 
     return parser
 
+def something(iargs=None):
+    print('QQ: Falk_test')
+    return
+
+def print_string(string=None):
+    """print a string"""
+    print('QQ-print_string:', string)
+    print('QQ-print_again:', string)
+    return
+
 def cmd_line_parse(iargs=None):
     """Command line parser."""
     parser = create_parser()
@@ -137,7 +147,7 @@ def save_gbis_plotdata(eos_file, geo_vel_file, start_date_mod, end_date_mod):
     cmd1 = f'save_gbis.py {vel_file} -g {os.path.dirname(eos_file)}/inputs/geometryRadar.h5' 
     print('timeseries2velocity command:',cmd)
     output = subprocess.check_output(cmd.split())
-    print('ave_gbis command:',cmd1.split())
+    print('save_gbis command:',cmd1.split())
     output = subprocess.check_output(cmd1.split())
 
 def remove_directory_containing_mintpy_from_path(path):

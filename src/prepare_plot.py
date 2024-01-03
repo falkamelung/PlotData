@@ -4,21 +4,8 @@
 # ## Plot InSAR, GPS and seismicity data
 # Assumes that the data are located in  `$SCRATCHDIR` (e.g.  `$SCRATCHDIR/MaunaLoaSenDT87/mintpy`).
 # Output is  written into  `$SCRATCHDIR/MaunaLoa/SenDT87` and `$SCRATCHDIR/MaunaLoa/SenAT124`
-# 
-# Run all cells of this notebook for an example. The  plot options can be changed by editing the last `cmd = plot_data.py ...`  in the  cell of the `main` functions. Use -`-save-gbis` to save as GBIS files.
-
-# In[ ]:
-
 
 import os
-import sys
-import urllib
-import csv
-import glob
-import re
-import time
-import datetime
-import requests
 import numpy as np
 import pandas as pd
 from pandas import concat
@@ -50,20 +37,6 @@ from utils.seismicity import get_earthquakes, normalize_earthquake_times
 from utils.gps import get_gps
 from utils.insar import generate_view_velocity_cmd, generate_view_ifgram_cmd
 import subprocess
-
-# %load_ext jupyter_ai
-if 'ipykernel' in sys.modules:
-    from IPython import get_ipython
-    ipython = get_ipython()
-    if 'autoreload' not in ipython.extension_manager.loaded:
-        ipython.magic('load_ext autoreload')
-        ipython.magic('autoreload 2')
-else:
-    pass
-
-
-# In[ ]:
-
 
 def run_prepare(inps):
     # Prepare data for plotting
@@ -162,10 +135,6 @@ def run_prepare(inps):
         data_dict['hz.h5'] = {'start_date': start_date, 'end_date': end_date}
     return data_dict
 
-
-# In[ ]:
-
-
 def run_plot(data_dict, inps):
 
     data_dir = inps.data_dir
@@ -241,66 +210,3 @@ def run_plot(data_dict, inps):
             axes[i].quiverkey(quiv, -155.50, 19.57, gps_key_length*10 , quiver_label, labelpos='N',coordinates='data',
                               color='blue',fontproperties={'size': font_size}) 
     plt.show()
-
-
-# In[ ]:
-
-
-def main(iargs=None):
-    os.chdir(os.getenv('SCRATCHDIR'))
-    print('iargs', iargs)
-    inps = cmd_line_parse(iargs)    
-    print('inps:',inps)
-    data_dict = run_prepare(inps)
-    run_plot(data_dict, inps)
-    
-    # return data_dict, inps, iargs
-    return None, None, None
-###########################################################################################
-
-if __name__ == '__main__':
-    if is_jupyter():
-        # in Jupyter, assign command line args to sys.argv
-        cmd = 'plot_data.py --help'
-        cmd = 'plot_data.py MaunaLoaSenDT87 --plot-type ifgram --seismicity --GPS'
-        cmd = 'plot_data.py MaunaLoaSenDT87 --plot-type shaded_relief --seismicity --GPS'
-        cmd = 'plot_data.py MaunaLoaSenAT124 MaunaLoaSenDT87 --noseismicity --GPS'
-        cmd = 'plot_data.py MaunaLoaSenAT124 MaunaLoaSenDT87 --ref-point 19.55,-155.45'
-        cmd = 'plot_data.py MaunaLoaSenDT87 --plot-type velocity'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --mask-thresh 0.9'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type horzvert --ref-point 19.55,-155.45 --period 20220801-20221127 --plot-box 19.43:19.5,-155.62:-155.55 --vlim -5 5 --save-gbis'
-        cmd = 'plot_data.py --help'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20 MaunaLoaSenAT124/mintpy_5_20 --plot-type velocity --ref-point 19.55,-155.45 --period 20220801-20221127 --vlim -20 20 --save-gbis --GPS --seismicity --fontsize 14'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS --GPS-scale-fac 200 --GPS-key-length 1'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --GPS --seismicity'
-        cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_5_20  --plot-type shaded-relief --plot-box 19.43:19.5,-155.62:-155.55  --seismicity'
-        cmd = 'plot_data.py GalapagosSenDT128/mintpy  --plot-type=velocity --plot-box=-0.52:-0.28,-91.7:-91.4 --period=20200131-20231231 --GPS --seismicity'
-        cmd = 'plot_data.py GalapagosSenDT128/mintpy GalapagosSenAT106/mintpy_orig  --plot-type=horzvert --plot-box=-1.0:-0.75,-91.55:-91.25 --period=20190101-20230801 --vlim -5 5'
-        cmd = 'plot_data.py GalapagosSenDT128/mintpy GalapagosSenAT106/mintpy_orig  --plot-type=horzvert --plot-box=-1.0:-0.75,-91.55:-91.25 --period=20220101-20230831 --vlim -5 5'
-
-        # replace multiple spaces with a single space, remove trailing space
-        cmd = re.sub(' +', ' ', cmd) 
-        cmd = cmd.rstrip()
-    
-        sys.argv = cmd.split()
-    print('Command:',sys.argv)
-    data_dict, inps, sys.argv = main(sys.argv[1:]) 
-
-
-# In[ ]:
-
-
-# # DEBUG CELL: uncomment for access to inps, data_dict 
-# def main(iargs=None):
-#     print('iargs', iargs)
-#     inps = cmd_line_parse(iargs)    
-#     print('inps:',inps)
-#     data_dict = run_prepare(inps)
-#     run_plot(data_dict, inps)  
-#     return data_dict, inps, iargs
-
-# cmd = 'plot_data.py MaunaLoaSenDT87/mintpy_2_8_step  MaunaLoaSenAT124/mintpy_2_8_step --plot-type step --period 20201001-20210306 --ref-point 19.475,-155.6 --plot-box 19.43:19.5,-155.62:-155.55 --vlim -6 6'
-# print(cmd)
-# sys.argv = cmd.split()
-# data_dict, inps, sys.argv = main(sys.argv[1:])  
-
