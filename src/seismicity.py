@@ -1,9 +1,6 @@
 import requests
 from datetime import datetime, timezone
 import pandas as pd
-from pandas import read_csv
-from pandas import concat
-from pandas import DataFrame
 
 def get_earthquakes(start_date, end_date, plot_box, depth_range="0 10", mag_range="0 10"):
     # Define the API endpoint and parameters

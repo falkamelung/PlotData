@@ -4,8 +4,8 @@ import pandas as pd
 from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
-from datetime import datetime, timezone
-from sklearn import datasets, linear_model
+from datetime import datetime
+from sklearn import linear_model
 from dateutil.relativedelta import relativedelta
 
 def get_gps(gps_dir, gps_list_file, plot_box, start_date, end_date, unit, key_length):

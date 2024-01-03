@@ -28,14 +28,14 @@ from mintpy.objects.gps import search_gps, GPS
 from mintpy.objects import sensor
 from mintpy.view import prep_slice, plot_slice
 from mintpy.cli import view, timeseries2velocity, reference_point, asc_desc2horz_vert, save_gdal, mask
-from utils.helper_functions import is_jupyter, create_parser, cmd_line_parse, get_file_names
-from utils.helper_functions import prepend_scratchdir_if_needed, find_nearest_start_end_date
-from utils.helper_functions import get_data_type, get_dem_extent, save_gbis_plotdata
-from utils.plot_functions import get_basemap, plot_shaded_relief
-from utils.plot_functions import modify_colormap, add_colorbar
-from utils.seismicity import get_earthquakes, normalize_earthquake_times
-from utils.gps import get_gps
-from utils.insar import generate_view_velocity_cmd, generate_view_ifgram_cmd
+from helper_functions import is_jupyter, create_parser, cmd_line_parse, get_file_names
+from helper_functions import prepend_scratchdir_if_needed, find_nearest_start_end_date
+from helper_functions import get_data_type, get_dem_extent, save_gbis_plotdata
+from plot_functions import get_basemap, plot_shaded_relief
+from plot_functions import modify_colormap, add_colorbar
+from seismicity import get_earthquakes, normalize_earthquake_times
+from gps import get_gps
+from insar import generate_view_velocity_cmd, generate_view_ifgram_cmd
 import subprocess
 
 def run_prepare(inps):

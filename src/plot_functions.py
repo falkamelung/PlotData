@@ -4,9 +4,9 @@ from mintpy.utils import readfile, writefile
 from matplotlib.colors import LinearSegmentedColormap, LightSource
 import matplotlib.pyplot as plt
 import numpy as np
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
-from utils.helper_functions import get_dem_extent
+from helper_functions import get_dem_extent
 
 def modify_colormap(cmap_name = "plasma_r", exclude_beginning = 0.15, exclude_end = 0.25, show = False):
     """ modify a colormap by excluding percentages at the beginning and end """
