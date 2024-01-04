@@ -15,34 +15,6 @@ EXAMPLE = """example:
   plot_data.py  MaunaLoaSenDT87       
 """
      
-def create_parser(subparsers=None):
-    synopsis = 'Plotting of InSAR, GPS and Seismicity data'
-    epilog = EXAMPLE
-    name = __name__.split('.')[-1]
-    parser = create_argument_parser(name, synopsis=synopsis, description=synopsis, epilog=epilog, subparsers=subparsers)
-    line_file = os.getenv('RSMASINSAR_HOME') + '/tools/plotdata' + '/data/hawaii_lines_new.mat'
-
-    parser.add_argument('data_dir', nargs='*', help='Directory(s) with InSAR data.\n')
-    parser.add_argument('--plot-box',  nargs='?', dest='plot_box', type=str, default='19.29:19.6,-155.79:-155.41',
-                        help='geographic area plotted')
-    parser.add_argument('--period', dest='period', default='20220101-20221101', help='time period (20220101-20221101)')    
-    parser.add_argument('--seismicity', dest='flag_seismicity', action='store_true', default=False, help='flag to add seismicity')
-    parser.add_argument('--GPS', dest='flag_gps', action='store_true', default=False, help='flag to add GPS vectors')
-    parser.add_argument('--plot-type', dest='plot_type', default='velocity', help='Type of plot: velocity, horzvert, ifgram, step, shaded_relief (Default: velocity).')
-    parser.add_argument('--lines', dest='line_file', default=line_file, help='fault file (Default: plotdata/data/hawaii_lines_new.mat)')
-    parser.add_argument('--GPS-scale-fac', dest='gps_scale_fac', default=500, type=int, help='GPS scale factor (Default: 500)')
-    parser.add_argument('--GPS-key-length', dest='gps_key_length', default=4, type=int, help='GPS key length (Default: 4)')
-    parser.add_argument('--GPS-units', dest='gps_unit', default="cm", help='GPS units (Default: cm)')
-    parser.add_argument('--unit', dest='unit', default="cm", help='InSAR units (Default: cm)')
-    parser.add_argument('--fontsize', dest='font_size', default=12, type=int, help='fontsize for view.py (Default: 12)')
-
-    parser.add_argument('--ref-point', dest='reference_lalo', type=str, default=False, help='reference point')
-    parser.add_argument('--mask-thresh', dest='mask_vmin', type=float, default=0.7, help='coherence threshold for masking (Default: 0.7)')
-    parser.add_argument('--vlim', dest='vlim', nargs=2, metavar=('VMIN', 'VMAX'), type=float, help='colorlimit')
-    parser.add_argument('--save-gbis', dest='flag_save_gbis', action='store_true', default=False, help='save GBIS files')
-
-    return parser
-
 def something(iargs=None):
     print('QQ: Falk_test')
     return
@@ -103,6 +75,7 @@ def get_file_names(path):
         else:
             files = glob.glob( path + '/*.he5' )
         eos_file = max(files, key=os.path.getctime)
+    print('HDF5EOS file used:', eos_file)
 
     keywords = ['SenDT', 'SenAT', 'CskAT', 'CskDT']
     elements = path.split(os.sep)   
@@ -163,47 +136,46 @@ def remove_directory_containing_mintpy_from_path(path):
     cleaned_path = '/'.join(dirs)
     return cleaned_path,  mintpy_dir
   
-def find_nearest_start_end_date(fname, start_date, end_date):
+def find_nearest_start_end_date(fname, period):
     ''' Find nearest dates to start and end dates given as YYYYMMDD '''
     
     dateList = HDFEOS(fname).get_date_list()
     
-    start_date_int = int(start_date)
-    end_date_int = int(end_date)
-    
-    if start_date_int < int(dateList[0]):
-        raise Exception("USER ERROR: No date found earlier than ", start_date_int )
-    if end_date_int > int(dateList[-1]):
-        raise Exception("USER ERROR:  No date found later than ", end_date_int )
-    
-    # print ('start_date_int: ',start_date_int)
-    for date in reversed(dateList):
-        date_int = int(date)
-        # print(date_int)
-        if date_int <= start_date_int:
-            mod_start_date = date
-            # print("Date just before start date:", date)
-            break
-    # print ('start_date_int: ',start_date_int)
-    for date in reversed(dateList):
-        date_int = int(date)
-        # print(date_int)
-        if date_int <= end_date_int:
-            mod_end_date = date
-            # print("Date just before end date:", date)
-            break
-    
-    #This works for the data after end date 
-    # for date in dateList:
-    #     date_int = int(date)
-    #     if date_int >= end_date_int:
-    #         mod_end_date = date
-    #         # print("Date just after end date:", date)
-    #         break
+    if period:
+        period = [val for val in period.split('-')]                                # converts to period=['20220101', '20221101']
+        start_date = period[0]
+        end_date = period[1]
+
+        if int(start_date) < int(dateList[0]):
+            raise Exception("USER ERROR: No date found earlier than ", start_date )
+        if int(end_date) > int(dateList[-1]):
+            raise Exception("USER ERROR:  No date found later than ", end_date )
+
+        for date in reversed(dateList):
+            # print(date_int)
+            if int(date) <= int(start_date):
+                mod_start_date = date
+                # print("Date just before start date:", date)
+                break
+        
+        # print ('start_date_int: ',start_date_int)
+        for date in reversed(dateList):
+            # print(date_int)
+            if int(date) <= int(end_date):
+                mod_end_date = date
+                # print("Date just before end date:", date)
+                break
+    else:
+        mod_start_date = dateList[0]
+        mod_end_date = dateList[-1]
 
     print('###############################################')
-    print(' Given start_date, end_date:', start_date, end_date) 
-    print(' Found start_date, end_date:', mod_start_date, mod_end_date) 
+    print(' Period of data:  ', dateList[0], dateList[-1])
+    if period:
+        print(' Period requested:', start_date, end_date) 
+    else:
+        print(' Period requested:', period)
+    print(' Period used:     ', mod_start_date, mod_end_date) 
     print('###############################################')
 
     return mod_start_date, mod_end_date

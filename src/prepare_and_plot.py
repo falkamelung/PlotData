@@ -39,38 +39,26 @@ def run_prepare(inps):
     inps.dem_file = inps.gps_dir + '/demGeo.h5'  
 
     data_dir = inps.data_dir
-    gps_dir = inps.gps_dir
-    gps_list_file = inps.gps_list_file
     dem_file =  inps.dem_file
-    plot_box = inps.plot_box
-    flag_seismicity = inps.flag_seismicity
-    flag_gps = inps.flag_gps
     plot_type = inps.plot_type
-    line_file = inps.line_file
-    gps_scale_fac = inps.gps_scale_fac
-    gps_key_length = inps.gps_key_length
-    gps_unit = inps.gps_unit
-    unit = inps.unit
-    font_size = inps.font_size
     reference_lalo = inps.reference_lalo
     mask_vmin = inps.mask_vmin
-    vlim = inps.vlim
     flag_save_gbis =  inps.flag_save_gbis
-    start_date = inps.period[0]
-    end_date = inps.period[1]
+    period = inps.period
+
 
     # calculate velocities for periods of interest
     data_dict = {}
     if plot_type == 'velocity' or plot_type == 'horzvert':
         for dir in data_dir:
             work_dir = prepend_scratchdir_if_needed(dir)
-            eos_file, geo_vel_fie, geo_geometry_file, out_dir, out_geo_vel_file = get_file_names(work_dir)
+            eos_file, q, q, q, out_geo_vel_file = get_file_names(work_dir)
             temp_coh_file=out_geo_vel_file.replace('velocity.h5','temporalCoherence.tif')
-            start_date_mod, end_date_mod = find_nearest_start_end_date(eos_file, start_date, end_date)
+            start_date, end_date = find_nearest_start_end_date(eos_file, period)
             # get masked geo_velocity.h5 with MintPy
             # cmd = f'{eos_file} --start-date {start_date_mod} --end-date {end_date_mod} --output {out_geo_vel_file}'
             # timeseries2velocity.main( cmd.split() )
-            cmd = f'{eos_file} --start-date {start_date_mod} --end-date {end_date_mod} --output {out_geo_vel_file}'
+            cmd = f'{eos_file} --start-date {start_date} --end-date {end_date} --output {out_geo_vel_file}'
             cmd =['timeseries2velocity.py'] + cmd.split()
             output = subprocess.check_output(cmd)
             #print(output.decode())
@@ -82,10 +70,10 @@ def run_prepare(inps):
                 cmd = f'{out_geo_vel_file} --lat {reference_lalo[0]} --lon {reference_lalo[1]}'
                 reference_point.main( cmd.split() )
             if flag_save_gbis:
-                save_gbis_plotdata(eos_file, out_geo_vel_file, start_date_mod, end_date_mod)
+                save_gbis_plotdata(eos_file, out_geo_vel_file, start_date, end_date)
             data_dict[out_geo_vel_file] = {
-            'start_date': start_date_mod,
-            'end_date': end_date_mod
+            'start_date': start_date,
+            'end_date': end_date
             }
     elif plot_type == 'step':
         for dir in data_dir:
@@ -155,8 +143,8 @@ def run_plot(data_dict, inps):
         axes = [axes] 
         
     for i, (file, dict) in enumerate(data_dict.items()):
-        axes[i].set_xlim(plot_box[2], plot_box[3])
-        axes[i].set_ylim(plot_box[0], plot_box[1])
+        # axes[i].set_xlim(plot_box[2], plot_box[3])
+        # axes[i].set_ylim(plot_box[0], plot_box[1])
         
         if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'ifgram' or plot_type == 'step':
             if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'step':
