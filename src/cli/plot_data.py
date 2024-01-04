@@ -71,15 +71,21 @@ def create_parser():
     return inps
 
 ############################################################
-def main():
-    if len(sys.argv) == 1:
+def main(iargs):
+    print('QQQ plot_data.main: iargs, length:', iargs, len(iargs) )  
+    if len(iargs) == 1:
         # called without arguments (from vscode)
-        cmd = 'plot_data.py GalapagosSenDT128/mintpy  --plot-type=velocity --plot-box=-0.52:-0.28,-91.7:-91.4 --period=20200131-20221231'
+        cmd = 'plot_data.py --help'
+        cmd = 'plot_data.py GalapagosSenDT128/mintpy  --plot-type=velocity --plot-box=-0.52:-0.28,-91.7:-91.4 --period=20200131-20220430'
+
         cmd = os.path.expandvars(cmd)
         cmd = re.sub(' +', ' ', cmd) .rstrip()
         sys.argv = cmd.split()
+    #sys.argv = iargs
+    print('QQQ plot_data.main: sys.argv, length:', sys.argv, len(sys.argv) )  
+
     inps = create_parser()
-    print('inps: ',inps)
+    print('plot_data.main inps: ',inps)
     message_rsmas.log(os.getcwd(), os.path.basename(__file__) + ' ' + ' '.join(sys.argv[1:]))
 
     # import
@@ -97,4 +103,4 @@ def main():
 
 ############################################################
 if __name__ == '__main__':
-    main()
+    main(iargs=sys.argv)
