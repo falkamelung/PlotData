@@ -70,10 +70,12 @@ def get_file_names(path):
     elif os.path.isfile(os.getenv('SCRATCHDIR') + '/' + path):
         eos_file = os.getenv('SCRATCHDIR') + '/' + path
     else:
-        if not 'mintpy' in path:
-            files = glob.glob( path + '/mintpy/*.he5' )
+        if 'mintpy' in path or 'network' in path :
+            files = glob.glob( path + '/*[0-9].he5' )
         else:
-            files = glob.glob( path + '/*.he5' )
+            files = glob.glob( path + '/mintpy/*.he5' )
+        if len(files) == 0:
+            raise Exception('USER ERROR: No HDF5EOS files found in ' + path)
         eos_file = max(files, key=os.path.getctime)
     print('HDF5EOS file used:', eos_file)
 
@@ -142,7 +144,7 @@ def find_nearest_start_end_date(fname, period):
     dateList = HDFEOS(fname).get_date_list()
     
     if period:
-        period = [val for val in period.split('-')]                                # converts to period=['20220101', '20221101']
+        period = [val for val in period.split('-')]         # converts to period=['20220101', '20221101']
         start_date = period[0]
         end_date = period[1]
 
@@ -152,18 +154,14 @@ def find_nearest_start_end_date(fname, period):
             raise Exception("USER ERROR:  No date found later than ", end_date )
 
         for date in reversed(dateList):
-            # print(date_int)
             if int(date) <= int(start_date):
-                mod_start_date = date
                 # print("Date just before start date:", date)
-                break
-        
-        # print ('start_date_int: ',start_date_int)
+                mod_start_date = date
+                break     
         for date in reversed(dateList):
-            # print(date_int)
             if int(date) <= int(end_date):
-                mod_end_date = date
                 # print("Date just before end date:", date)
+                mod_end_date = date
                 break
     else:
         mod_start_date = dateList[0]
@@ -207,6 +205,15 @@ def get_data_type(file):
             #raise Exception('ERROR: file not up.h5 or horz.h5 -- exiting: ' + file)  
            
     return type
+
+def get_plot_box(data_dict):
+    ''' get plot_box from data_dict '''
+    plot_box = []
+    file = next(iter(data_dict))        # get first key
+    atr = readfile.read_attribute(file)
+    plot_box = [float(atr['Y_FIRST']) + int(atr['FILE_LENGTH'])*float(atr['Y_STEP']), float(atr['Y_FIRST']), 
+        float(atr['X_FIRST']), float(atr['X_FIRST']) + int(atr['WIDTH'])*float(atr['X_STEP'])] 
+    return plot_box
 
 def get_dem_extent(atr_dem):
     # get the extent which is required for plotting

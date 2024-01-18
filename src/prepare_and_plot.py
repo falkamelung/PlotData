@@ -12,9 +12,9 @@ from mintpy.utils import readfile, writefile
 from mintpy.defaults.plot import *
 from mintpy.view import prep_slice, plot_slice
 from mintpy.cli import reference_point, asc_desc2horz_vert, save_gdal, mask
-from helper_functions import get_file_names
+from helper_functions import get_file_names, get_data_type, get_plot_box
 from helper_functions import prepend_scratchdir_if_needed, find_nearest_start_end_date
-from helper_functions import get_data_type, save_gbis_plotdata
+from helper_functions import  save_gbis_plotdata
 from plot_functions import plot_shaded_relief
 from plot_functions import modify_colormap, add_colorbar
 from seismicity import get_earthquakes, normalize_earthquake_times
@@ -36,16 +36,22 @@ def run_prepare(inps):
     
     print('run_prepare: inps.gps_dir:' , inps.gps_dir)
     inps.gps_list_file = inps.gps_dir + '/GPS_BenBrooks_03-05full.txt'
-    inps.dem_file = inps.gps_dir + '/demGeo.h5'  
 
     data_dir = inps.data_dir
     dem_file =  inps.dem_file
+    if inps.dem_file:
+        dem_file =  inps.dem_file
+    else:
+        dem_file =  inps.data_dir[0] + '/geo/geo_geometryRadar.h5'
+
     plot_type = inps.plot_type
     reference_lalo = inps.reference_lalo
     mask_vmin = inps.mask_vmin
     flag_save_gbis =  inps.flag_save_gbis
-    period = inps.period
-
+    if inps.period:
+        period = [val for val in inps.period.split('-')]      # converts to period=['20220101', '20221101']
+        start_date = period[0]
+        end_date = period[1]
 
     # calculate velocities for periods of interest
     data_dict = {}
@@ -105,14 +111,16 @@ def run_prepare(inps):
         asc_desc2horz_vert.main( cmd.split() )
         data_dict['up.h5'] = {'start_date': start_date, 'end_date': end_date}
         data_dict['hz.h5'] = {'start_date': start_date, 'end_date': end_date}
+    
+    if inps.plot_box is None:
+        inps.plot_box = get_plot_box(data_dict)
+    
     return data_dict
 
 def run_plot(data_dict, inps):
 
-    data_dir = inps.data_dir
     gps_dir = inps.gps_dir
     gps_list_file = inps.gps_list_file
-    dem_file =  inps.dem_file
     plot_box = inps.plot_box
     flag_seismicity = inps.flag_seismicity
     flag_gps = inps.flag_gps
@@ -121,15 +129,14 @@ def run_plot(data_dict, inps):
     gps_scale_fac = inps.gps_scale_fac
     gps_key_length = inps.gps_key_length
     gps_unit = inps.gps_unit
-    unit = inps.unit
     font_size = inps.font_size
-    reference_lalo = inps.reference_lalo
-    mask_vmin = inps.mask_vmin
-    vlim = inps.vlim
-    flag_save_gbis =  inps.flag_save_gbis
-    start_date = inps.period[0]
-    end_date = inps.period[1]
-    depth_range = inps.depth_range
+    if inps.period:
+        period = [val for val in inps.period.split('-')]      # converts to period=['20220101', '20221101']
+        start_date = period[0]
+        end_date = period[1]
+    else:
+        start_date = data_dict[next(iter(data_dict))]['start_date']
+        end_date = data_dict[next(iter(data_dict))]['end_date']
     cmap_name = inps.cmap_name
     exclude_beginning = inps.exclude_beginning
     exclude_end = inps.exclude_end
@@ -143,8 +150,6 @@ def run_plot(data_dict, inps):
         axes = [axes] 
         
     for i, (file, dict) in enumerate(data_dict.items()):
-        # axes[i].set_xlim(plot_box[2], plot_box[3])
-        # axes[i].set_ylim(plot_box[0], plot_box[1])
         
         if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'ifgram' or plot_type == 'step':
             if plot_type == 'velocity' or plot_type == 'horzvert' or plot_type == 'step':
